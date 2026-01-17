@@ -1,0 +1,64 @@
+# Python
+__pycache__
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv
+
+# Node.js
+node_modules/
+.pnp
+.pnp.js
+
+# Dependencies
+coverage/
+.nyc_output/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env*
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor files and directories
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# OS files
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+
+# Vite
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Cursor & Tools
+.cursor/
+.specify
+
+# Snyk Security Extension
+.cursor/rules/snyk_rules.mdc

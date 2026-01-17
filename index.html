@@ -1,0 +1,3689 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Character encoding -->
+    <meta charset="UTF-8" />
+
+    <!-- Viewport for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Primary meta tags -->
+    <title>The Chameleon</title>
+    <meta name="title" content="The Chameleon - Interactive Dice Game" />
+    <meta name="description"
+        content="Play The Chameleon game with interactive dice and customizable themes. Roll D6 and D8 dice to select items from a 4x4 grid." />
+    <meta name="keywords" content="chameleon game, dice game, board game, interactive game" />
+    <meta name="author" content="The Chameleon Game" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#a8d5ba" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The Chameleon - Interactive Dice Game" />
+    <meta property="og:description" content="Play The Chameleon game with interactive dice and customizable themes." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="The Chameleon - Interactive Dice Game" />
+    <meta name="twitter:description" content="Play The Chameleon game with interactive dice and customizable themes." />
+
+    <!-- Performance: DNS prefetch and preconnect for external resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- Font loading with display=swap for better performance -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"
+        media="print" onload="this.media = 'all'" />
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+            rel="stylesheet" />
+    </noscript>
+
+    <!-- Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎭</text></svg>" />
+
+    <!-- Apple touch icon -->
+    <link rel="apple-touch-icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎭</text></svg>" />
+
+    <!-- Security headers -->
+    <!-- Note: X-Frame-Options must be set via HTTP headers, not meta tags -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <style>
+        /* ============================================
+                CSS VARIABLES - Theme Colors
+                ============================================ */
+        :root {
+            /* Primary color scheme (green tones) */
+            --color-primary: #a8d5ba;
+            --color-primary-dark: #7fb89a;
+            /* Secondary color (pink tones) */
+            --color-secondary: #f4c2c2;
+            /* Accent color (orange by default, user customizable) */
+            --color-accent: #ffb347;
+            /* Text color for light accent backgrounds (auto-calculated) */
+            --color-accent-text: #000000;
+            /* Border color for accent elements (auto-calculated) */
+            --color-accent-border: #333333;
+            /* Background and surface colors */
+            --color-background: #faf7f0;
+            --color-surface: #ffffff;
+            /* Text colors */
+            --color-text-primary: #5a5a5a;
+            --color-text-secondary: #8a8a8a;
+            /* Border color */
+            --color-border: #e8e8e8;
+            /* Grid cell hover gradient end color */
+            --color-grid-hover-end: #f8f8f8;
+            /* D6 dice face color (yellow) */
+            --d6-dice-color: #eade4e;
+        }
+
+        /* Dark mode color overrides */
+        .dark-mode {
+            --color-primary: #577178;
+            --color-primary-dark: #38505a;
+            --color-secondary: #92696e;
+            --color-accent: #ffad43;
+            --color-background: #20222a;
+            --color-surface: #252730;
+            --color-text-primary: #ede0be;
+            --color-text-secondary: #bdbdbd;
+            --color-border: #444857;
+            /* Grid cell hover gradient end color (darker for dark mode) */
+            --color-grid-hover-end: #1a1b22;
+            --d6-dice-color: #eade4e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            /* Font stack with fallbacks for better performance and compatibility */
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                'Segoe UI',
+                'Roboto',
+                'Oxygen',
+                'Ubuntu',
+                'Cantarell',
+                'Fira Sans',
+                'Droid Sans',
+                'Helvetica Neue',
+                sans-serif;
+            background: var(--color-background);
+            color: var(--color-text-primary);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            transition:
+                background 0.4s,
+                color 0.4s;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            gap: 8px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 7px;
+        }
+
+        /* ============================================
+               LANGUAGE SELECTOR
+               ============================================ */
+        .language-select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: 2px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                'Segoe UI',
+                'Roboto',
+                'Oxygen',
+                'Ubuntu',
+                'Cantarell',
+                'Fira Sans',
+                'Droid Sans',
+                'Helvetica Neue',
+                sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            min-width: 100px;
+        }
+
+        .language-select:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .language-select:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* ============================================
+               ACCENT COLOR PICKER
+               ============================================ */
+        .accent-picker {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Individual accent color button */
+        .accent-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid var(--color-border);
+            background: transparent;
+            cursor: pointer;
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s,
+                outline 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .accent-btn:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .accent-btn.selected {
+            box-shadow: 0 0 0 3px var(--color-accent);
+            border-color: var(--color-accent-border, var(--color-accent));
+        }
+
+        .accent-btn.selected:focus-visible {
+            outline: 2px solid var(--color-accent-text, #000);
+            outline-offset: 2px;
+        }
+
+        .accent-dot {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            background: currentColor;
+            pointer-events: none;
+        }
+
+        /* ============================================
+                DARK MODE TOGGLE SWITCH
+                ============================================ */
+        /* Hidden checkbox input (accessibility) */
+        .dm-toggle-checkbox {
+            opacity: 0;
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+
+        /* Toggle switch container (label acts as button) */
+        .dm-toggle-label {
+            background-color: var(--color-border);
+            width: 50px;
+            height: 26px;
+            border-radius: 50px;
+            position: relative;
+            padding: 2px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s linear;
+            border: 2px solid transparent;
+            /* Performance: optimize for touch interactions */
+            touch-action: manipulation;
+        }
+
+        .dm-toggle-label:hover {
+            border-color: var(--color-accent-border, var(--color-accent));
+        }
+
+        .dm-toggle-checkbox:focus-visible+.dm-toggle-label {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .dm-toggle-label .dm-toggle-icon {
+            display: block;
+            width: 100%;
+            height: 24px;
+            position: relative;
+            z-index: 1;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .dm-toggle-icon svg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .dm-toggle-icon .sunface {
+            /* Sun on left: ball center is at left: 2px + 11px (half of 22px ball) = 13px */
+            left: 13px;
+            right: auto;
+        }
+
+        .dm-toggle-icon .moonface {
+            /* Moon on right: when checked, ball center is at 37px from left (26px ball left + 11px center) */
+            /* With translate(-50%, -50%), we position the center point */
+            left: 37px;
+            right: auto;
+        }
+
+        .dm-toggle-label .dm-toggle-ball {
+            background-color: var(--color-surface);
+            width: 22px;
+            height: 22px;
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            transition: transform 0.2s linear;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            /* Performance optimization for smooth animation */
+            will-change: transform;
+        }
+
+        .dm-toggle-checkbox:checked+.dm-toggle-label {
+            background-color: var(--color-accent);
+        }
+
+        .dm-toggle-checkbox:checked+.dm-toggle-label .dm-toggle-ball {
+            transform: translate(24px, -50%);
+        }
+
+        .title-header {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin: 8px 0 4px;
+            padding: 8px;
+            background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            -moz-background-clip: text;
+            background-clip: text;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .topic-label {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--color-text-primary);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: auto repeat(4, 1fr);
+            gap: 4px;
+            max-width: 700px;
+            width: 100%;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease-in;
+            /* Performance: use GPU acceleration for animations */
+            transform: translateZ(0);
+        }
+
+        .grid-header {
+            background: var(--color-accent);
+            color: var(--color-accent-text, white);
+            padding: 8px 16px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(212, 165, 247, 0.3);
+            transition: transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grid-header:hover {
+            transform: scale(1.02);
+        }
+
+        .grid-cell {
+            background: var(--color-surface);
+            padding: 8px 4px;
+            text-align: center;
+            border-radius: 8px;
+            border: 2px solid var(--color-border);
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideIn 0.4s ease-out;
+            animation-fill-mode: both;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Performance: contain layout and paint for better rendering */
+            contain: layout style paint;
+        }
+
+        .grid-cell:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--color-primary);
+            background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-grid-hover-end) 100%);
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin: 12px 0;
+            align-items: center;
+        }
+
+        .dice-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dice-face {
+            width: 60px;
+            height: 60px;
+            background: var(--color-surface);
+            border: 3px solid var(--color-primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(168, 213, 186, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            position: relative;
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s,
+                opacity 0.2s ease,
+                filter 0.2s ease;
+            /* Performance optimization for animations */
+            will-change: transform;
+            /* Default: fully visible, no opacity */
+            opacity: 1;
+            filter: opacity(1);
+        }
+
+        .dice-face.d6-face {
+            background: var(--d6-dice-color) !important;
+            border: none !important;
+            box-shadow: 0 4px 16px rgba(212, 247, 65, 0.2);
+        }
+
+        .dice-face.d6-face.rolling {
+            border: none !important;
+            /* Optimize for animation performance */
+            will-change: transform, opacity;
+            /* Faded filter effect during rolling */
+            opacity: 0.6;
+            filter: opacity(0.9);
+            transition:
+                opacity 0.2s ease,
+                filter 0.2s ease;
+        }
+
+        .dots-dice.d6-dots .dot {
+            background: #000000 !important;
+        }
+
+        .dice-face.d8-face {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .dice-face.d8-face.rolling {
+            border: none !important;
+            /* Optimize for animation performance */
+            will-change: transform, opacity;
+            /* Faded filter effect during rolling */
+            opacity: 0.6;
+            filter: opacity(0.9);
+            transition:
+                opacity 0.2s ease,
+                filter 0.2s ease;
+        }
+
+        .dice-label {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            text-align: center;
+            margin-top: 4px;
+            font-weight: 500;
+            min-height: 15px;
+        }
+
+        .dots-dice {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: var(--color-primary-dark);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .dot.pos1 {
+            top: 6px;
+            left: 6px;
+        }
+
+        .dot.pos2 {
+            top: 6px;
+            left: 18px;
+        }
+
+        .dot.pos3 {
+            top: 6px;
+            left: 30px;
+        }
+
+        .dot.pos4 {
+            top: 18px;
+            left: 6px;
+        }
+
+        .dot.pos5 {
+            top: 18px;
+            left: 18px;
+        }
+
+        .dot.pos6 {
+            top: 18px;
+            left: 30px;
+        }
+
+        .dot.pos7 {
+            top: 30px;
+            left: 6px;
+        }
+
+        .dot.pos8 {
+            top: 30px;
+            left: 18px;
+        }
+
+        .dot.pos9 {
+            top: 30px;
+            left: 30px;
+        }
+
+        /* ============================================
+                BUTTONS
+                ============================================ */
+        /* Roll dice button - primary action */
+        .roll-dice-button {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(168, 213, 186, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 0 8px;
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                'Segoe UI',
+                'Roboto',
+                'Oxygen',
+                'Ubuntu',
+                'Cantarell',
+                'Fira Sans',
+                'Droid Sans',
+                'Helvetica Neue',
+                sans-serif;
+        }
+
+        .roll-dice-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(168, 213, 186, 0.5);
+        }
+
+        .roll-dice-button:active {
+            transform: translateY(0);
+        }
+
+        /* Shuffle topic button - secondary action */
+        .shuffle-button {
+            background: linear-gradient(135deg, var(--color-secondary) 0%, #e8b0b0 100%);
+            color: #22223b;
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(244, 194, 194, 0.4);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin: 8px auto;
+            display: block;
+            font-family:
+                'Inter',
+                -apple-system,
+                BlinkMacSystemFont,
+                'Segoe UI',
+                'Roboto',
+                'Oxygen',
+                'Ubuntu',
+                'Cantarell',
+                'Fira Sans',
+                'Droid Sans',
+                'Helvetica Neue',
+                sans-serif;
+            /* Performance: optimize for touch and reduce click delay */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .shuffle-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(244, 194, 194, 0.5);
+        }
+
+        .shuffle-button:active {
+            transform: translateY(0);
+        }
+
+        .shuffle-button:focus-visible {
+            outline: 3px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================
+                STATISTICS SECTION
+                ============================================ */
+        .stats-container {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--color-surface);
+            border-radius: 12px;
+            border: 2px solid var(--color-border);
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin: 0 0 16px 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+
+        .stats-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stats-subtitle {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin: 0 0 12px 0;
+            text-align: center;
+        }
+
+        .stats-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 4px;
+            height: 120px;
+            padding: 8px;
+            background: var(--color-background);
+            border-radius: 8px;
+        }
+
+        .stats-bar-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            gap: 4px;
+        }
+
+        .stats-bar {
+            width: 100%;
+            background: linear-gradient(180deg, var(--color-accent) 0%, var(--color-primary) 100%);
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            transition: height 0.3s ease-out;
+            position: relative;
+        }
+
+        .stats-bar-label {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            background: var(--color-surface);
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .stats-bar-value {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-top: 4px;
+        }
+
+        /* ============================================
+               HELP BUTTON (FLOATING)
+               ============================================ */
+        .help-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            color: var(--color-accent-text, white);
+            border: 2px solid var(--color-accent-border, var(--color-accent));
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .help-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .help-button:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        /* ============================================
+               MODAL
+               ============================================ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition:
+                opacity 0.3s ease,
+                visibility 0.3s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--color-surface);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--color-border);
+            border: none;
+            color: var(--color-text-primary);
+            font-size: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--color-accent);
+            color: var(--color-accent-text, white);
+            transform: rotate(90deg);
+        }
+
+        .modal-close:focus-visible {
+            outline: 2px solid var(--color-accent);
+            outline-offset: 2px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin: 0 0 20px 0;
+            padding-right: 40px;
+        }
+
+        .shortcuts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--color-background);
+            border-radius: 8px;
+            border: 1px solid var(--color-border);
+        }
+
+        .shortcut-description {
+            font-size: 14px;
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .shortcut-key {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            background: var(--color-surface);
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--color-border);
+            font-family: 'Inter', monospace;
+        }
+
+        .shortcut-key kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 3px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="accent-picker" id="accentPicker" aria-label="Accent Color">
+                <!-- JS will render accent color buttons here -->
+            </div>
+            <input type="checkbox" class="dm-toggle-checkbox" id="darkmodeCheckbox" role="switch"
+                aria-checked="false" />
+            <label for="darkmodeCheckbox" class="dm-toggle-label" aria-hidden="true">
+                <span class="dm-toggle-icon" id="dmToggleIcon" aria-hidden="true">
+                    <!-- JS will render sun/moon -->
+                </span>
+                <span class="dm-toggle-ball" aria-hidden="true"></span>
+            </label>
+            <select id="languageSelect" class="language-select" aria-label="Select Language">
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+            </select>
+        </div>
+        <h1 class="title-header">The Chameleon</h1>
+
+        <output class="topic-label" id="topicLabel" aria-live="polite">Topic: Loading...</output>
+
+        <div class="dice-container">
+            <div class="dice-column">
+                <div class="dice-face d6-face" id="d6Face"></div>
+                <div class="dice-label" id="d6Label"></div>
+            </div>
+            <div class="dice-column">
+                <div class="dice-face d8-face" id="d8Face"></div>
+                <div class="dice-label" id="d8Label"></div>
+            </div>
+        </div>
+
+        <div class="grid-container" id="gridContainer"></div>
+
+        <button class="shuffle-button" id="shuffleButton" type="button">
+            🎲 <span id="shuffleButtonLabel">Shuffle Topic</span>
+        </button>
+
+        <!-- Statistics Section -->
+        <div class="stats-container" id="statsContainer">
+            <h2 class="stats-title" id="statsTitle">Roll Statistics</h2>
+            <div class="stats-grid">
+                <div class="stats-section">
+                    <h3 class="stats-subtitle" id="d6StatsTitle">D6 Rolls</h3>
+                    <div class="stats-chart" id="d6StatsChart" aria-label="D6 dice roll frequency chart">
+                        <!-- Bar graph will be rendered here -->
+                    </div>
+                </div>
+                <div class="stats-section">
+                    <h3 class="stats-subtitle" id="d8StatsTitle">D8 Rolls</h3>
+                    <div class="stats-chart" id="d8StatsChart" aria-label="D8 dice roll frequency chart">
+                        <!-- Bar graph will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Button (Floating) -->
+        <button class="help-button" id="helpButton" aria-label="Keyboard Shortcuts" title="Keyboard Shortcuts">
+            ?
+        </button>
+
+        <!-- Help Modal -->
+        <dialog class="modal-overlay" id="helpModal" aria-labelledby="helpModalTitle" aria-hidden="true">
+            <div class="modal-content">
+                <button class="modal-close" id="modalClose" aria-label="Close">×</button>
+                <h2 class="modal-title" id="helpModalTitle">Keyboard Shortcuts</h2>
+                <div class="shortcuts-list" id="shortcutsList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </dialog>
+    </div>
+
+    <script>
+        /* ============================================
+        THE CHAMELEON GAME
+        A single-page web application for playing
+        The Chameleon game with dice and topics.
+
+        Features:
+        - Interactive 4x4 grid with topics
+        - D6 and D8 dice rolling
+        - Customizable accent colors
+        - Dark/light mode toggle
+        - Internationalization (i18n)
+        - Full keyboard accessibility
+        - URL parameter persistence
+        ============================================ */
+
+        /* ============================================
+        TOPIC DATA
+        All game topics and their items
+        Loaded from frontend/static/js/game-data.js
+        ============================================ */
+        const data = {
+            Games: [
+                'Monopoly',
+                'Scrabble',
+                'Risk',
+                'Chess',
+                'Checkers',
+                'Uno',
+                'Clue',
+                'Battleship',
+                'Operation',
+                'Twister',
+                'Pictionary',
+                'Jenga',
+                'Trivial Pursuit',
+                'Codenames',
+                'Connect 4',
+                'Guess Who',
+            ],
+            'Video Games': [
+                'Super Mario',
+                'Minecraft',
+                'Grand Theft Auto',
+                'Call of Duty',
+                'Pokémon',
+                'The Sims',
+                'FIFA',
+                'Tetris',
+                'League of Legends',
+                'Zelda',
+                'Skyrim',
+                'Fortnite',
+                "Assassin's Creed",
+                'Dark Souls',
+                'God of War',
+                'World of Warcraft',
+            ],
+            Food: [
+                'Pizza',
+                'Pasta',
+                'Bread',
+                'Rice',
+                'Potatoes',
+                'Fish',
+                'Chicken',
+                'Beef',
+                'Soup',
+                'Salad',
+                'Eggs',
+                'Cheese',
+                'Sausage',
+                'Chocolate',
+                'Ice Cream',
+                'Cake',
+            ],
+            'Fast Food & Snacks': [
+                'Burger',
+                'Hot Dog',
+                'Fries',
+                'Donut',
+                'Nachos',
+                'Popcorn',
+                'Pretzel',
+                'Sandwich',
+                'Taco',
+                'Burrito',
+                'Kebab',
+                'Pizza Slice',
+                'Chicken Nuggets',
+                'Spring Rolls',
+                'Onion Rings',
+                'Wrap',
+            ],
+            'Ice Cream Flavors': [
+                'Vanilla',
+                'Chocolate',
+                'Strawberry',
+                'Pistachio',
+                'Hazelnut',
+                'Mint',
+                'Lemon',
+                'Coffee',
+                'Caramel',
+                'Coconut',
+                'Banana',
+                'Berries',
+                'Stracciatella',
+                'Zabaglione',
+                'Tiramisu',
+                'White Chocolate',
+            ],
+            Transport: [
+                'Car',
+                'Bus',
+                'Train',
+                'Airplane',
+                'Helicopter',
+                'Boat',
+                'Ship',
+                'Motorcycle',
+                'Bicycle',
+                'Submarine',
+                'Tram',
+                'Tank',
+                'Spaceship',
+                'Hot Air Balloon',
+                'Cable Car',
+                'Hovercraft',
+            ],
+            Rooms: [
+                'Kitchen',
+                'Bedroom',
+                'Bathroom',
+                'Living Room',
+                'Dining Room',
+                'Office',
+                'Hallway',
+                'Attic',
+                'Basement',
+                'Garage',
+                'Pantry',
+                'Nursery',
+                'Balcony',
+                'Terrace',
+                'Closet',
+                'Cellar',
+            ],
+            Phobias: [
+                'Spiders',
+                'Snakes',
+                'Heights',
+                'Darkness',
+                'Clowns',
+                'Germs',
+                'Needles',
+                'Flying',
+                'Dogs',
+                'Birds',
+                'Insects',
+                'Rats',
+                'Ghosts',
+                'Monsters',
+                'Roller Coasters',
+                'Enclosed Spaces',
+            ],
+            'Musical Instruments': [
+                'Guitar',
+                'Piano',
+                'Violin',
+                'Drums',
+                'Flute',
+                'Saxophone',
+                'Trumpet',
+                'Cello',
+                'Harp',
+                'Clarinet',
+                'Harmonica',
+                'Ukulele',
+                'Accordion',
+                'Banjo',
+                'Bagpipes',
+                'Xylophone',
+            ],
+            Sports: [
+                'Football (Soccer)',
+                'Basketball',
+                'Tennis',
+                'Cricket',
+                'Rugby',
+                'Golf',
+                'Swimming',
+                'Volleyball',
+                'Cycling',
+                'Ice Hockey',
+                'American Football',
+                'Baseball',
+                'Table Tennis',
+                'Badminton',
+                'Athletics',
+                'Gymnastics',
+            ],
+            Countries: [
+                'United States',
+                'Canada',
+                'Mexico',
+                'Brazil',
+                'Argentina',
+                'United Kingdom',
+                'France',
+                'Germany',
+                'Italy',
+                'Spain',
+                'Netherlands',
+                'Poland',
+                'Sweden',
+                'Norway',
+                'China',
+                'Japan',
+                'India',
+                'South Korea',
+                'Australia',
+                'Egypt',
+                'South Africa',
+                'Nigeria',
+                'Kenya',
+                'Morocco',
+                'Thailand',
+            ],
+            Cities: [
+                'New York City',
+                'Los Angeles',
+                'Chicago',
+                'London',
+                'Paris',
+                'Rome',
+                'Berlin',
+                'Madrid',
+                'Vienna',
+                'Amsterdam',
+                'Tokyo',
+                'Beijing',
+                'Seoul',
+                'Mumbai',
+                'Bangkok',
+                'Sydney',
+                'Rio de Janeiro',
+                'Cape Town',
+            ],
+            Geography: [
+                'Mountain',
+                'River',
+                'Lake',
+                'Sea',
+                'Ocean',
+                'Island',
+                'Desert',
+                'Forest',
+                'Jungle',
+                'Valley',
+                'Glacier',
+                'Waterfall',
+                'Volcano',
+                'Cave',
+                'Swamp',
+                'Tundra',
+            ],
+            Biomes: [
+                'Tropical Rainforest',
+                'Savanna',
+                'Desert',
+                'Temperate Forest',
+                'Taiga',
+                'Tundra',
+                'Grassland',
+                'Mediterranean Scrub',
+                'Mangrove Forest',
+                'Swamp',
+                'Coral Reef',
+                'Temperate Rainforest',
+                'Alpine',
+                'Steppe',
+                'Wetlands',
+                'Boreal Forest',
+            ],
+            Plants: [
+                'Oak',
+                'Beech',
+                'Pine',
+                'Palm',
+                'Baobab',
+                'Bamboo',
+                'Sunflower',
+                'Daisy',
+                'Rose',
+                'Tulip',
+                'Cactus',
+                'Eucalyptus',
+                'Maple',
+                'Olive Tree',
+                'Rice',
+                'Wheat',
+            ],
+            'World Landmarks': [
+                'Eiffel Tower',
+                'Statue of Liberty',
+                'Great Wall of China',
+                'Colosseum',
+                'Machu Picchu',
+                'Taj Mahal',
+                'Pyramids of Giza',
+                'Christ the Redeemer',
+                'Big Ben',
+                'Stonehenge',
+                'Acropolis of Athens',
+                'Leaning Tower of Pisa',
+                'Sydney Opera House',
+                'Hagia Sophia',
+                'Grand Canyon',
+                'Mount Everest',
+            ],
+            Civilizations: [
+                'Romans',
+                'Egyptians',
+                'Greeks',
+                'Persians',
+                'Maya',
+                'Aztecs',
+                'Inca',
+                'Chinese',
+                'Japanese',
+                'Vikings',
+                'Mongols',
+                'Celts',
+                'Spartans',
+                'Ottomans',
+                'Etruscans',
+                'Gauls',
+            ],
+            'Regions & States': [
+                'Bavaria',
+                'Berlin',
+                'Hesse',
+                'North Rhine-Westphalia',
+                'Saxony',
+                'Vienna',
+                'Tyrol',
+                'Lombardy',
+                'Tuscany',
+                'Lazio',
+                'Sicily',
+                'Sardinia',
+                'Piedmont',
+                'Emilia-Romagna',
+                'Salzburg',
+                'Styria',
+            ],
+            Movies: [
+                'The Godfather',
+                'Titanic',
+                'Jurassic Park',
+                'Jaws',
+                'Avatar',
+                'The Matrix',
+                'Inception',
+                'Gladiator',
+                'Pulp Fiction',
+                'Fight Club',
+                'The Shawshank Redemption',
+                'Forrest Gump',
+                'Back to the Future',
+                'Star Wars',
+                'The Dark Knight',
+                'The Lord of the Rings',
+            ],
+            'TV Series': [
+                'Friends',
+                'Breaking Bad',
+                'Game of Thrones',
+                'The Simpsons',
+                'The Big Bang Theory',
+                'Stranger Things',
+                'Star Trek',
+                'The Walking Dead',
+                'The X-Files',
+                'How I Met Your Mother',
+                'Lost',
+                'Black Mirror',
+                'Sherlock',
+                "Grey's Anatomy",
+                'Rick and Morty',
+                'The Office',
+            ],
+            'Film Genres': [
+                'Action',
+                'Comedy',
+                'Drama',
+                'Horror',
+                'Thriller',
+                'Science Fiction',
+                'Fantasy',
+                'Romantic Comedy',
+                'Animation',
+                'Documentary',
+                'Crime',
+                'Gangster',
+                'Western',
+                'War',
+                'Musical',
+                'Christmas',
+            ],
+            'Sci-Fi & Fantasy': [
+                'Star Wars',
+                'The Lord of the Rings',
+                'Dune',
+                'Blade Runner',
+                'The Matrix',
+                '2001: A Space Odyssey',
+                'Alien',
+                'Terminator',
+                'Doctor Who',
+                'The War of the Worlds',
+                'The NeverEnding Story',
+                'Edward Scissorhands',
+                'WALL-E',
+                'Back to the Future',
+                'Jurassic Park',
+                'Game of Thrones',
+            ],
+            'Animated Films': [
+                'Toy Story',
+                'The Lion King',
+                'Shrek',
+                'Finding Nemo',
+                'Frozen',
+                'Inside Out',
+                'Spirited Away',
+                'Kung Fu Panda',
+                'Ratatouille',
+                'Up',
+                'Monsters, Inc.',
+                'Zootopia',
+                'Cars',
+                'Wall-E',
+                'Ice Age',
+                'The Incredibles',
+            ],
+            'Animated Series': [
+                'The Simpsons',
+                'Rick and Morty',
+                'Tom and Jerry',
+                'SpongeBob SquarePants',
+                'Avatar: The Last Airbender',
+                'Naruto',
+                'Dragon Ball',
+                'One Piece',
+                'Pokémon',
+                'Family Guy',
+                'Adventure Time',
+                'Scooby-Doo',
+                'Ben 10',
+                'Gravity Falls',
+                'Teenage Mutant Ninja Turtles',
+                'Phineas and Ferb',
+            ],
+            Musicals: [
+                'The Phantom of the Opera',
+                'Les Misérables',
+                'The Lion King',
+                'Cats',
+                'Hamilton',
+                'Chicago',
+                'Mamma Mia!',
+                'Wicked',
+                'West Side Story',
+                'Oliver!',
+                'Annie',
+                'Hairspray',
+                'Jersey Boys',
+                'School of Rock',
+                'The Book of Mormon',
+                '42nd Street',
+            ],
+            "Children's Books": [
+                'The Hobbit',
+                'Peter Pan',
+                "Harry Potter and the Philosopher's Stone",
+                'Alice in Wonderland',
+                'Charlie and the Chocolate Factory',
+                'The Lion, the Witch and the Wardrobe',
+                'Winnie-the-Pooh',
+                'The Jungle Book',
+                'Pinocchio',
+                '101 Dalmatians',
+                'The Wizard of Oz',
+                'The Little Prince',
+                'Treasure Island',
+                'Dumbo',
+                'A Christmas Carol',
+                'Where the Wild Things Are',
+            ],
+            'Literary Classics': [
+                'The Lord of the Rings',
+                '1984',
+                'Crime and Punishment',
+                'War and Peace',
+                'The Divine Comedy',
+                'The Odyssey',
+                'Don Quixote',
+                'Anna Karenina',
+                'Wuthering Heights',
+                'Moby Dick',
+                'The Picture of Dorian Gray',
+                'The Iliad',
+                'One Hundred Years of Solitude',
+                'The Decameron',
+                'The Diary of Anne Frank',
+                'Doctor Zhivago',
+            ],
+            Authors: [
+                'William Shakespeare',
+                'Jane Austen',
+                'Charles Dickens',
+                'Leo Tolstoy',
+                'Fyodor Dostoevsky',
+                'Victor Hugo',
+                'Oscar Wilde',
+                'Mark Twain',
+                'Agatha Christie',
+                'Stephen King',
+                'J. K. Rowling',
+                'J. R. R. Tolkien',
+                'George Orwell',
+                'Ernest Hemingway',
+                'Edgar Allan Poe',
+                'Gabriel García Márquez',
+            ],
+            'Fantasy & Adventure Books': [
+                'Harry Potter',
+                'The Chronicles of Narnia',
+                'The NeverEnding Story',
+                'Percy Jackson and the Olympians',
+                'His Dark Materials',
+                'The Hobbit',
+                'The Lord of the Rings',
+                'Alice in Wonderland',
+                "Gulliver's Travels",
+                'Treasure Island',
+                'The Jungle Book',
+                'The Princess Bride',
+                'The War of the Worlds',
+                'Dune',
+                'The Martian',
+                "The Hitchhiker's Guide to the Galaxy",
+            ],
+            Philosophers: [
+                'Socrates',
+                'Plato',
+                'Aristotle',
+                'Confucius',
+                'Avicenna',
+                'René Descartes',
+                'Immanuel Kant',
+                'Friedrich Nietzsche',
+                'Jean-Paul Sartre',
+                'John Locke',
+                'David Hume',
+                'Jean-Jacques Rousseau',
+                'Georg Wilhelm Friedrich Hegel',
+                'Ludwig Wittgenstein',
+                'Simone de Beauvoir',
+                'Hannah Arendt',
+            ],
+            Poets: [
+                'Homer',
+                'Dante Alighieri',
+                'William Blake',
+                'Johann Wolfgang von Goethe',
+                'Emily Dickinson',
+                'Walt Whitman',
+                'Rumi',
+                'Hafez',
+                'Saadi',
+                'Ferdowsi',
+                'Pablo Neruda',
+                'Federico García Lorca',
+                'T. S. Eliot',
+                'Sylvia Plath',
+                'Langston Hughes',
+                'Robert Frost',
+            ],
+            'Historical Figures': [
+                'Jesus Christ',
+                'Napoleon Bonaparte',
+                'Julius Caesar',
+                'Cleopatra',
+                'Charlemagne',
+                'Christopher Columbus',
+                'Leonardo da Vinci',
+                'Galileo Galilei',
+                'Isaac Newton',
+                'Charles Darwin',
+                'Albert Einstein',
+                'Wolfgang Amadeus Mozart',
+                'Joan of Arc',
+                'Winston Churchill',
+                'Mahatma Gandhi',
+                'Martin Luther King Jr.',
+            ],
+            'World Leaders & Politicians': [
+                'George Washington',
+                'Abraham Lincoln',
+                'Theodore Roosevelt',
+                'Franklin D. Roosevelt',
+                'John F. Kennedy',
+                'Nelson Mandela',
+                'Angela Merkel',
+                'Barack Obama',
+                'Donald Trump',
+                'Joe Biden',
+                'Vladimir Putin',
+                'Margaret Thatcher',
+                'Indira Gandhi',
+                'Golda Meir',
+                'Pope Francis',
+                'Napoleon Bonaparte',
+            ],
+            'Scientists & Inventors': [
+                'Albert Einstein',
+                'Isaac Newton',
+                'Nikola Tesla',
+                'Thomas Edison',
+                'Alexander Graham Bell',
+                'Marie Curie',
+                'Galileo Galilei',
+                'Charles Darwin',
+                'Louis Pasteur',
+                'Michael Faraday',
+                'James Watt',
+                'Johannes Gutenberg',
+                'Alan Turing',
+                'Stephen Hawking',
+                'Leonardo da Vinci',
+                'Guglielmo Marconi',
+            ],
+            'Artists & Cultural Icons': [
+                'Leonardo da Vinci',
+                'Michelangelo',
+                'Vincent van Gogh',
+                'Pablo Picasso',
+                'Claude Monet',
+                'Rembrandt',
+                'Salvador Dalí',
+                'Andy Warhol',
+                'Banksy',
+                'Frida Kahlo',
+                'Jackson Pollock',
+                'Marc Chagall',
+                'Henri Matisse',
+                'Giotto',
+                'Caravaggio',
+                'Katsushika Hokusai',
+            ],
+            'Entertainment Icons': [
+                'Charlie Chaplin',
+                'Marilyn Monroe',
+                'Elvis Presley',
+                'Michael Jackson',
+                'Freddie Mercury',
+                'Madonna',
+                'The Beatles',
+                'Walt Disney',
+                'Steven Spielberg',
+                'Alfred Hitchcock',
+                'Bruce Lee',
+                'Arnold Schwarzenegger',
+                'Tom Hanks',
+                'Meryl Streep',
+                'Johnny Depp',
+                'Leonardo DiCaprio',
+            ],
+            'Zoo Animals': [
+                'Elephant',
+                'Giraffe',
+                'Lion',
+                'Tiger',
+                'Leopard',
+                'Zebra',
+                'Rhinoceros',
+                'Hippopotamus',
+                'Gorilla',
+                'Chimpanzee',
+                'Meerkat',
+                'Ostrich',
+                'Alligator',
+                'Wolf',
+                'Bear',
+                'Lynx',
+            ],
+            'Jungle Animals': [
+                'Monkey',
+                'Chimpanzee',
+                'Sloth',
+                'Toucan',
+                'Anaconda',
+                'Tiger',
+                'Jaguar',
+                'Tapir',
+                'Boar',
+                'Frog',
+                'Crocodile',
+                'Anteater',
+                'Okapi',
+                'Lemur',
+                'Parrot',
+                'Poison Dart Frog',
+            ],
+            'Under the Sea': [
+                'Octopus',
+                'Shark',
+                'Dolphin',
+                'Whale',
+                'Killer Whale',
+                'Sea Turtle',
+                'Clownfish',
+                'Seahorse',
+                'Jellyfish',
+                'Starfish',
+                'Lobster',
+                'Crab',
+                'Manta Ray',
+                'Anglerfish',
+                'Narwhal',
+                'Giant Squid',
+            ],
+            Pets: [
+                'Dog',
+                'Cat',
+                'Rabbit',
+                'Hamster',
+                'Guinea Pig',
+                'Parrot',
+                'Goldfish',
+                'Turtle',
+                'Snake',
+                'Iguana',
+                'Ferret',
+                'Hedgehog',
+                'Chinchilla',
+                'Mouse',
+                'Lizard',
+                'Tarantula',
+            ],
+            Insects: [
+                'Ant',
+                'Bee',
+                'Butterfly',
+                'Dragonfly',
+                'Ladybug',
+                'Beetle',
+                'Grasshopper',
+                'Cricket',
+                'Mosquito',
+                'Fly',
+                'Wasp',
+                'Moth',
+                'Termite',
+                'Cockroach',
+                'Flea',
+                'Stick Insect',
+            ],
+            Birds: [
+                'Eagle',
+                'Owl',
+                'Hawk',
+                'Falcon',
+                'Vulture',
+                'Parrot',
+                'Crow',
+                'Pigeon',
+                'Sparrow',
+                'Flamingo',
+                'Pelican',
+                'Albatross',
+                'Hummingbird',
+                'Woodpecker',
+                'Stork',
+                'Kingfisher',
+            ],
+            'Plains Animals': [
+                'Elephant',
+                'Buffalo',
+                'Cheetah',
+                'Gazelle',
+                'Giraffe',
+                'Lion',
+                'Hyena',
+                'Rhinoceros',
+                'Zebra',
+                'Wildebeest',
+                'Meerkat',
+                'Ostrich',
+                'Leopard',
+                'Warthog',
+                'Antelope',
+                'Python',
+            ],
+            'Mythical Creatures': [
+                'Dragon',
+                'Unicorn',
+                'Phoenix',
+                'Griffin',
+                'Pegasus',
+                'Cyclops',
+                'Minotaur',
+                'Hydra',
+                'Sphinx',
+                'Centaur',
+                'Mermaid',
+                'Werewolf',
+                'Vampire',
+                'Troll',
+                'Yeti',
+                'Loch Ness Monster',
+            ],
+            'Fantasy Races': [
+                'Elves',
+                'Dwarves',
+                'Humans',
+                'Orcs',
+                'Goblins',
+                'Giants',
+                'Trolls',
+                'Ents',
+                'Fairies',
+                'Sprites',
+                'Vampires',
+                'Werewolves',
+                'Dragons',
+                'Centaurs',
+                'Undead',
+                'Shapeshifters',
+            ],
+            Superheroes: [
+                'Batman',
+                'Superman',
+                'Spider-Man',
+                'Iron Man',
+                'Captain America',
+                'Thor',
+                'Hulk',
+                'Wonder Woman',
+                'Black Widow',
+                'Black Panther',
+                'Doctor Strange',
+                'Flash',
+                'Aquaman',
+                'Wolverine',
+                'Deadpool',
+                'Captain Marvel',
+            ],
+            'Fictional Characters': [
+                'James Bond',
+                'Indiana Jones',
+                'Harry Potter',
+                'Frodo Baggins',
+                'Sherlock Holmes',
+                'Katniss Everdeen',
+                'Lara Croft',
+                'Princess Leia',
+                'Darth Vader',
+                'Luke Skywalker',
+                'Wonder Woman',
+                'Homer Simpson',
+                'Mario',
+                'Gandalf',
+                'Dracula',
+                'Robin Hood',
+            ],
+            'Harry Potter Characters': [
+                'Harry Potter',
+                'Hermione Granger',
+                'Ron Weasley',
+                'Albus Dumbledore',
+                'Severus Snape',
+                'Lord Voldemort',
+                'Minerva McGonagall',
+                'Rubeus Hagrid',
+                'Draco Malfoy',
+                'Luna Lovegood',
+                'Ginny Weasley',
+                'Neville Longbottom',
+                'Sirius Black',
+                'Remus Lupin',
+                'Bellatrix Lestrange',
+                'Lucius Malfoy',
+            ],
+            'Super Mario Characters': [
+                'Mario',
+                'Luigi',
+                'Princess Peach',
+                'Bowser',
+                'Yoshi',
+                'Toad',
+                'Daisy',
+                'Wario',
+                'Waluigi',
+                'Bowser Jr.',
+                'Donkey Kong',
+                'Goomba',
+                'Koopa Troopa',
+                'Boo',
+                'Chain Chomp',
+                'Piranha Plant',
+            ],
+            'Music Genres': [
+                'Rock',
+                'Pop',
+                'Classical',
+                'Hip Hop',
+                'Rap',
+                'Jazz',
+                'Blues',
+                'Heavy Metal',
+                'Electronic',
+                'Techno',
+                'House',
+                'Disco',
+                'Reggae',
+                'Country',
+                'Punk',
+                'Indie',
+            ],
+            Bands: [
+                'The Beatles',
+                'The Rolling Stones',
+                'Queen',
+                'Pink Floyd',
+                'Led Zeppelin',
+                'Nirvana',
+                'AC/DC',
+                'Metallica',
+                'U2',
+                'Coldplay',
+                'Radiohead',
+                'Red Hot Chili Peppers',
+                'Linkin Park',
+                'Green Day',
+                "Guns N' Roses",
+                'ABBA',
+            ],
+            'Music Artists': [
+                'Michael Jackson',
+                'Elvis Presley',
+                'Madonna',
+                'Freddie Mercury',
+                'Beyoncé',
+                'Taylor Swift',
+                'Eminem',
+                'Rihanna',
+                'Ed Sheeran',
+                'Drake',
+                'Adele',
+                'Justin Bieber',
+                'Kanye West',
+                'Bruno Mars',
+                'Lady Gaga',
+                'The Weeknd',
+            ],
+            Singers: [
+                'Frank Sinatra',
+                'Whitney Houston',
+                'Aretha Franklin',
+                'Bob Dylan',
+                'Prince',
+                'David Bowie',
+                'Stevie Wonder',
+                'Celine Dion',
+                'Ariana Grande',
+                'Billie Eilish',
+                'Shakira',
+                'Robbie Williams',
+                'Katy Perry',
+                'Pink',
+                'Avril Lavigne',
+                'Bruno Mars',
+            ],
+            'Classical Composers': [
+                'Wolfgang Amadeus Mozart',
+                'Ludwig van Beethoven',
+                'Johann Sebastian Bach',
+                'Franz Schubert',
+                'Joseph Haydn',
+                'Antonio Vivaldi',
+                'Pyotr Ilyich Tchaikovsky',
+                'Frédéric Chopin',
+                'Claude Debussy',
+                'Richard Wagner',
+                'Giuseppe Verdi',
+                'Johannes Brahms',
+                'George Frideric Handel',
+                'Gustav Mahler',
+                'Sergei Rachmaninoff',
+                'Igor Stravinsky',
+            ],
+            'Musical Instruments (Music)': [
+                'Guitar',
+                'Piano',
+                'Violin',
+                'Drums',
+                'Bass Guitar',
+                'Saxophone',
+                'Trumpet',
+                'Flute',
+                'Cello',
+                'Clarinet',
+                'Harp',
+                'Accordion',
+                'Trombone',
+                'Oboe',
+                'Tuba',
+                'Ukulele',
+            ],
+            'Jobs & Professions': [
+                'Doctor',
+                'Nurse',
+                'Teacher',
+                'Professor',
+                'Engineer',
+                'Programmer',
+                'Accountant',
+                'Lawyer',
+                'Police Officer',
+                'Security Guard',
+                'Chef',
+                'Architect',
+                'Carpenter',
+                'Electrician',
+                'Mechanic',
+                'Farmer',
+            ],
+            'School Subjects': [
+                'Mathematics',
+                'English',
+                'History',
+                'Geography',
+                'Biology',
+                'Chemistry',
+                'Physics',
+                'Art',
+                'Music',
+                'Physical Education',
+                'Philosophy',
+                'Economics',
+                'Literature',
+                'Religion',
+                'Latin',
+                'Technology',
+            ],
+            'Fields of Study': [
+                'Computer Science',
+                'Electrical Engineering',
+                'Mechanical Engineering',
+                'Civil Engineering',
+                'Business Administration',
+                'Medicine',
+                'Law',
+                'Psychology',
+                'Sociology',
+                'Biology',
+                'Physics',
+                'Mathematics',
+                'Architecture',
+                'Economics',
+                'Education',
+                'Linguistics',
+            ],
+            'University Faculties': [
+                'Engineering',
+                'Medicine',
+                'Law',
+                'Economics',
+                'Computer Science',
+                'Mathematics',
+                'Physics',
+                'Biology',
+                'Psychology',
+                'Political Science',
+                'Architecture',
+                'Literature',
+                'Languages',
+                'History',
+                'Philosophy',
+                'Nursing',
+            ],
+            Mathematics: [
+                'Addition',
+                'Subtraction',
+                'Multiplication',
+                'Division',
+                'Algebra',
+                'Geometry',
+                'Trigonometry',
+                'Calculus',
+                'Derivative',
+                'Integral',
+                'Limit',
+                'Function',
+                'Equation',
+                'Logarithm',
+                'Factorial',
+                'Probability',
+            ],
+            Geometry: [
+                'Point',
+                'Line',
+                'Plane',
+                'Angle',
+                'Triangle',
+                'Square',
+                'Rectangle',
+                'Circle',
+                'Radius',
+                'Diameter',
+                'Parallel',
+                'Perpendicular',
+                'Symmetry',
+                'Polygon',
+                'Area',
+                'Volume',
+            ],
+            'Brands & Companies': [
+                'Apple',
+                'Google',
+                'Microsoft',
+                'Amazon',
+                'Samsung',
+                'Tesla',
+                'BMW',
+                'Mercedes-Benz',
+                'Toyota',
+                'Nike',
+                'Adidas',
+                'Coca-Cola',
+                'Nestlé',
+                "McDonald's",
+                'Disney',
+                'Netflix',
+            ],
+            'Technology Companies': [
+                'Apple',
+                'Microsoft',
+                'Google',
+                'Amazon',
+                'Meta',
+                'Samsung',
+                'Intel',
+                'AMD',
+                'NVIDIA',
+                'IBM',
+                'Oracle',
+                'Huawei',
+                'Sony',
+                'LG',
+                'Dell',
+                'HP',
+            ],
+            'Software & Programs': [
+                'Microsoft Word',
+                'Microsoft Excel',
+                'PowerPoint',
+                'Adobe Photoshop',
+                'Adobe Illustrator',
+                'Google Chrome',
+                'Mozilla Firefox',
+                'Zoom',
+                'Skype',
+                'Telegram',
+                'WhatsApp',
+                'Steam',
+                'TeamViewer',
+                'CCleaner',
+                'VLC Media Player',
+                'OpenOffice',
+            ],
+            'Social Media & Platforms': [
+                'Facebook',
+                'Instagram',
+                'Twitter',
+                'TikTok',
+                'YouTube',
+                'WhatsApp',
+                'Telegram',
+                'Snapchat',
+                'Reddit',
+                'Discord',
+                'LinkedIn',
+                'Pinterest',
+                'Tumblr',
+                'Wikipedia',
+                'Twitch',
+                'OnlyFans',
+            ],
+            'Electronic Devices': [
+                'Smartphone',
+                'Laptop',
+                'Desktop Computer',
+                'Tablet',
+                'Smartwatch',
+                'Television',
+                'Radio',
+                'Speaker',
+                'Printer',
+                'Router',
+                'Camera',
+                'Projector',
+                'Game Console',
+                'VR Headset',
+                'Drone',
+                'Smart Speaker',
+            ],
+            'Mechanical Devices': [
+                'Steam Engine',
+                'Clockwork',
+                'Gear',
+                'Pulley',
+                'Lever',
+                'Crankshaft',
+                'Brake',
+                'Clutch',
+                'Watermill',
+                'Typewriter',
+                'Gramophone',
+                'Lock',
+                'Jack',
+                'Scale',
+                'Screwdriver',
+                'Piston',
+            ],
+            'Hobbies & Leisure': [
+                'Reading',
+                'Cooking',
+                'Baking',
+                'Gardening',
+                'Painting',
+                'Drawing',
+                'Photography',
+                'Traveling',
+                'Hiking',
+                'Walking',
+                'Cycling',
+                'Swimming',
+                'Yoga',
+                'DIY',
+                'Model Making',
+                'Board Games',
+            ],
+            'Indoor Hobbies': [
+                'Reading',
+                'Cooking',
+                'Baking',
+                'Knitting',
+                'Sewing',
+                'Painting',
+                'Drawing',
+                'Pottery',
+                'Puzzles',
+                'Meditation',
+                'Yoga',
+                'Video Games',
+                'Board Games',
+                'Model Building',
+                'Writing',
+                'Calligraphy',
+            ],
+            'Outdoor Activities': [
+                'Hiking',
+                'Camping',
+                'Cycling',
+                'Jogging',
+                'Walking',
+                'Fishing',
+                'Sailing',
+                'Swimming',
+                'Horse Riding',
+                'Rock Climbing',
+                'Surfing',
+                'Skiing',
+                'Snowboarding',
+                'Kayaking',
+                'Picnicking',
+                'Birdwatching',
+            ],
+            'Holidays & Celebrations': [
+                'Christmas',
+                "New Year's Eve",
+                'Easter',
+                'Halloween',
+                "Valentine's Day",
+                "Mother's Day",
+                "Father's Day",
+                "St. Patrick's Day",
+                "April Fool's Day",
+                'Hanukkah',
+                'Carnival',
+                'Bastille Day',
+                'Bonfire Night',
+                'Epiphany',
+                'Birthday',
+                'Wedding',
+            ],
+            'Wedding Anniversaries': [
+                'Paper',
+                'Cotton',
+                'Leather',
+                'Flowers',
+                'Wood',
+                'Iron',
+                'Bronze',
+                'Wool',
+                'Tin',
+                'Crystal',
+                'China',
+                'Silver',
+                'Pearl',
+                'Ruby',
+                'Gold',
+                'Diamond',
+            ],
+            'Vacation & Travel': [
+                'Hotel',
+                'Tent',
+                'Camper',
+                'Beach',
+                'Pool',
+                'Spa',
+                'Resort',
+                'Airport',
+                'Airplane',
+                'Train',
+                'Cruise',
+                'Restaurant',
+                'Bar',
+                'Market',
+                'City Tour',
+                'Rooftop Terrace',
+            ],
+            'Party & Group Games': [
+                'Charades',
+                'Mafia',
+                'Werewolf',
+                'Musical Chairs',
+                'Truth or Dare',
+                'Spin the Bottle',
+                'Pictionary',
+                'Taboo',
+                'Heads Up!',
+                'Simon Says',
+                'Freeze Tag',
+                'Hide and Seek',
+                'Beer Pong',
+                'Dodgeball',
+                'Scavenger Hunt',
+                'Karaoke',
+            ],
+            Clothing: [
+                'T-Shirt',
+                'Shirt',
+                'Blouse',
+                'Sweater',
+                'Jacket',
+                'Coat',
+                'Jeans',
+                'Pants',
+                'Skirt',
+                'Dress',
+                'Suit',
+                'Leggings',
+                'Joggers',
+                'Scarf',
+                'Hat',
+                'Shoes',
+            ],
+            Furniture: [
+                'Bed',
+                'Sofa',
+                'Armchair',
+                'Dining Table',
+                'Chair',
+                'Desk',
+                'Wardrobe',
+                'Chest of Drawers',
+                'Bookshelf',
+                'Coffee Table',
+                'TV Stand',
+                'Nightstand',
+                'Cabinet',
+                'Sideboard',
+                'Stool',
+                'Coat Rack',
+            ],
+            'Household Appliances': [
+                'Refrigerator',
+                'Washing Machine',
+                'Dishwasher',
+                'Microwave',
+                'Oven',
+                'Stove',
+                'Vacuum Cleaner',
+                'Iron',
+                'Toaster',
+                'Coffee Maker',
+                'Blender',
+                'Mixer',
+                'Hair Dryer',
+                'Air Conditioner',
+                'Heater',
+                'Fan',
+            ],
+            'Electrical Devices': [
+                'Television',
+                'Laptop',
+                'Desktop Computer',
+                'Smartphone',
+                'Tablet',
+                'Printer',
+                'Router',
+                'Smart Speaker',
+                'Game Console',
+                'Monitor',
+                'Projector',
+                'Radio',
+                'Lamp',
+                'Camera',
+                'Smartwatch',
+                'VR Headset',
+            ],
+            Toys: [
+                'Lego',
+                'Teddy Bear',
+                'Barbie',
+                'Hot Wheels',
+                "Rubik's Cube",
+                'Yo-Yo',
+                'Frisbee',
+                'Super Soaker',
+                'Play-Doh',
+                'Rocking Horse',
+                'Rag Doll',
+                'Game Boy',
+                'Building Blocks',
+                'Toy Car',
+                'Stuffed Animals',
+                'Hula Hoop',
+            ],
+            Weapons: [
+                'Sword',
+                'Spear',
+                'Bow',
+                'Crossbow',
+                'Dagger',
+                'Axe',
+                'Mace',
+                'Flail',
+                'Rapier',
+                'Katana',
+                'Halberd',
+                'Hammer',
+                'Shield',
+                'Longsword',
+                'Battle Axe',
+                'Cannon',
+            ],
+            'Everyday Items': [
+                'Backpack',
+                'Wallet',
+                'Keys',
+                'Umbrella',
+                'Watch',
+                'Sunglasses',
+                'Notebook',
+                'Pen',
+                'Bottle',
+                'Mug',
+                'Headphones',
+                'Charger',
+                'Mirror',
+                'Towel',
+                'Pillow',
+                'Blanket',
+            ],
+        };
+
+        // Accent color palette
+        const accentPalette = [
+            { name: 'Orange', color: '#ffb347' },
+            { name: 'Purple', color: '#d4a5f7' },
+            { name: 'Pink', color: '#f4c2c2' },
+            { name: 'Blue', color: '#87ceeb' },
+            { name: 'Green', color: '#90ee90' },
+            { name: 'Yellow', color: '#ffd700' },
+            { name: 'Red', color: '#ff6b6b' },
+            { name: 'Teal', color: '#4ecdc4' },
+        ];
+
+        // Matching primary colors for each accent
+        const accentPrimaries = {
+            '#ffb347': { primary: '#a8d5ba', primaryDark: '#7fb89a' }, // Orange -> Green
+            '#d4a5f7': { primary: '#c8a2c8', primaryDark: '#9d7bb0' }, // Purple -> Lavender
+            '#f4c2c2': { primary: '#e8b4b4', primaryDark: '#d18a8a' }, // Pink -> Rose
+            '#87ceeb': { primary: '#a8d5e2', primaryDark: '#7fb8d0' }, // Blue -> Sky
+            '#90ee90': { primary: '#a8d5ba', primaryDark: '#7fb89a' }, // Green -> Mint
+            '#ffd700': { primary: '#ffe4b5', primaryDark: '#ffd700' }, // Yellow -> Cream
+            '#ff6b6b': { primary: '#ffb3b3', primaryDark: '#ff8080' }, // Red -> Coral
+            '#4ecdc4': { primary: '#7fd4d0', primaryDark: '#5fb8b3' }, // Teal -> Aqua
+        };
+
+        // ---- End theme palettes ----
+
+        /* ============================================
+        INTERNATIONALIZATION (i18n)
+        Translation strings for multiple languages
+        ============================================ */
+        const translations = {
+            en: {
+                title: 'The Chameleon',
+                topic: 'Topic',
+                loading: 'Loading...',
+                rollDice: 'Roll Dice',
+                shuffleTopic: 'Shuffle Topic',
+                d6: 'D6',
+                d8: 'D8',
+                accentColor: 'Accent Color',
+                toggleDarkMode: 'Toggle Dark Mode',
+                darkMode: 'Dark Mode',
+                lightMode: 'Light Mode',
+                selectAccent: 'Select accent color',
+                currentAccent: 'Current accent color',
+                rollStatistics: 'Roll Statistics',
+                d6Rolls: 'D6 Rolls',
+                d8Rolls: 'D8 Rolls',
+                keyboardShortcuts: 'Keyboard Shortcuts',
+                shortcutRollDice: 'Roll Dice',
+                shortcutShuffle: 'Shuffle Topic',
+                shortcutDarkMode: 'Toggle Dark Mode',
+                shortcutCycleAccent: 'Cycle Accent Colors',
+            },
+            es: {
+                title: 'El Camaleón',
+                topic: 'Tema',
+                loading: 'Cargando...',
+                rollDice: 'Lanzar Dados',
+                shuffleTopic: 'Mezclar Tema',
+                d6: 'D6',
+                d8: 'D8',
+                accentColor: 'Color de Acento',
+                toggleDarkMode: 'Alternar Modo Oscuro',
+                darkMode: 'Modo Oscuro',
+                lightMode: 'Modo Claro',
+                selectAccent: 'Seleccionar color de acento',
+                currentAccent: 'Color de acento actual',
+                rollStatistics: 'Estadísticas de Tiradas',
+                d6Rolls: 'Tiradas D6',
+                d8Rolls: 'Tiradas D8',
+                keyboardShortcuts: 'Atajos de Teclado',
+                shortcutRollDice: 'Lanzar Dados',
+                shortcutShuffle: 'Mezclar Tema',
+                shortcutDarkMode: 'Alternar Modo Oscuro',
+                shortcutCycleAccent: 'Cambiar Colores de Acento',
+            },
+            fr: {
+                title: 'Le Caméléon',
+                topic: 'Sujet',
+                loading: 'Chargement...',
+                rollDice: 'Lancer les Dés',
+                shuffleTopic: 'Mélanger le Sujet',
+                d6: 'D6',
+                d8: 'D8',
+                accentColor: "Couleur d'Accent",
+                toggleDarkMode: 'Basculer le Mode Sombre',
+                darkMode: 'Mode Sombre',
+                lightMode: 'Mode Clair',
+                selectAccent: "Sélectionner la couleur d'accent",
+                currentAccent: "Couleur d'accent actuelle",
+                rollStatistics: 'Statistiques des Lancés',
+                d6Rolls: 'Lancés D6',
+                d8Rolls: 'Lancés D8',
+                keyboardShortcuts: 'Raccourcis Clavier',
+                shortcutRollDice: 'Lancer les Dés',
+                shortcutShuffle: 'Mélanger le Sujet',
+                shortcutDarkMode: 'Basculer le Mode Sombre',
+                shortcutCycleAccent: "Parcourir les Couleurs d'Accent",
+            },
+            de: {
+                title: 'Das Chamäleon',
+                topic: 'Thema',
+                loading: 'Lädt...',
+                rollDice: 'Würfeln',
+                shuffleTopic: 'Thema Mischen',
+                d6: 'D6',
+                d8: 'D8',
+                accentColor: 'Akzentfarbe',
+                toggleDarkMode: 'Dunkelmodus Umschalten',
+                darkMode: 'Dunkelmodus',
+                lightMode: 'Hellmodus',
+                selectAccent: 'Akzentfarbe auswählen',
+                currentAccent: 'Aktuelle Akzentfarbe',
+                rollStatistics: 'Würfelstatistiken',
+                d6Rolls: 'D6 Würfe',
+                d8Rolls: 'D8 Würfe',
+                keyboardShortcuts: 'Tastenkürzel',
+                shortcutRollDice: 'Würfeln',
+                shortcutShuffle: 'Thema Mischen',
+                shortcutDarkMode: 'Dunkelmodus Umschalten',
+                shortcutCycleAccent: 'Akzentfarben Durchlaufen',
+            },
+        };
+
+        // Current language (default to browser language or English)
+        let currentLang = 'en';
+
+        /**
+         * Detects user's browser language and returns supported language code
+         * @returns {string} Language code (en, es, fr, de) or 'en' as fallback
+         */
+        function detectLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const langCode = browserLang.split('-')[0].toLowerCase();
+            return translations[langCode] ? langCode : 'en';
+        }
+        currentLang = detectLanguage();
+
+        /**
+         * Translation function - gets translated string for current language
+         * @param {string} key - Translation key
+         * @returns {string} Translated text or key if translation not found
+         */
+        function t(key) {
+            return translations[currentLang]?.[key] || translations.en[key] || key;
+        }
+
+        /**
+         * Sets the application language and updates UI
+         * @param {string} lang - Language code (en, es, fr, de)
+         */
+        function setLanguage(lang) {
+            if (translations[lang]) {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                // Update language select dropdown
+                if (languageSelect) {
+                    languageSelect.value = lang;
+                }
+                // Update URL parameter
+                setURLParam('lang', lang);
+                updateUIText();
+            }
+        }
+
+        /* ============================================
+        GAME STATE
+        ============================================ */
+        let currentTopic = ''; // Currently selected topic name
+        let currentItems = []; // Array of 16 items for the current topic
+        let d6Value = 1; // Current D6 dice value (1-6)
+        let d8Value = 1; // Current D8 dice value (1-8)
+        let isRolling = false; // Flag to prevent multiple simultaneous rolls
+        let d6Interval = null, // Interval ID for D6 rolling animation
+            d8Interval = null, // Interval ID for D8 rolling animation
+            rollTimeout = null; // Timeout ID for roll completion
+        let darkMode = true; // Dark mode state (default: on)
+
+        /* ============================================
+        STATISTICS TRACKING
+        ============================================ */
+        // Track roll frequencies (reset on page load)
+        const d6Stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+        const d8Stats = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0 };
+
+        // DOM elements
+        const topicLabel = document.getElementById('topicLabel');
+        const gridContainer = document.getElementById('gridContainer');
+        const shuffleButton = document.getElementById('shuffleButton');
+        const d6Face = document.getElementById('d6Face');
+        const d8Face = document.getElementById('d8Face');
+        const d6Label = document.getElementById('d6Label');
+        const d8Label = document.getElementById('d8Label');
+        const statsContainer = document.getElementById('statsContainer');
+        const statsTitle = document.getElementById('statsTitle');
+        const d6StatsTitle = document.getElementById('d6StatsTitle');
+        const d8StatsTitle = document.getElementById('d8StatsTitle');
+        const d6StatsChart = document.getElementById('d6StatsChart');
+        const d8StatsChart = document.getElementById('d8StatsChart');
+
+        // Theme UI
+        const accentPicker = document.getElementById('accentPicker');
+        const darkModeCheckbox = document.getElementById('darkmodeCheckbox');
+        const dmToggleIcon = document.getElementById('dmToggleIcon');
+        const languageSelect = document.getElementById('languageSelect');
+        const helpButton = document.getElementById('helpButton');
+        const helpModal = document.getElementById('helpModal');
+        const modalClose = document.getElementById('modalClose');
+        const shortcutsList = document.getElementById('shortcutsList');
+        // App container
+        const bodyEl = document.body;
+
+        /* ============================================
+        DICE CONFIGURATION
+        ============================================ */
+        /**
+         * D6 dice face configurations
+         * Maps dice values (1-6) to dot positions on a 3x3 grid
+         * Grid positions: 1 2 3
+         *                4 5 6
+         *                7 8 9
+         */
+        const D6_DOTS = {
+            1: [5],
+            2: [1, 9],
+            3: [1, 5, 9],
+            4: [1, 3, 7, 9],
+            5: [1, 3, 5, 7, 9],
+            6: [1, 3, 4, 6, 7, 9],
+        };
+
+        /**
+         * Renders a D6 dice face with dots
+         * @param {number} value - Dice value (1-6)
+         * @param {boolean} rolling - Whether dice is currently rolling
+         */
+        function renderD6Face(value, rolling) {
+            d6Face.innerHTML = '';
+            d6Face.classList.toggle('rolling', !!rolling);
+            d6Face.classList.add('d6-face');
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'dots-dice d6-dots';
+            (D6_DOTS[value] || []).forEach(pos => {
+                const dot = document.createElement('div');
+                dot.className = `dot pos${pos}`;
+                dotsContainer.appendChild(dot);
+            });
+            d6Face.appendChild(dotsContainer);
+        }
+
+        /**
+         * Renders a D8 dice face with SVG and number
+         * @param {number} value - Dice value (1-8)
+         * @param {boolean} rolling - Whether dice is currently rolling
+         */
+        function renderD8Face(value, rolling) {
+            d8Face.innerHTML = '';
+            d8Face.classList.toggle('rolling', !!rolling);
+            d8Face.classList.add('d8-face');
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('version', '1.1');
+            svg.setAttribute('viewBox', '0 0 668 668');
+            svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+
+            const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path1.setAttribute('fill', 'none');
+            path1.setAttribute(
+                'd',
+                'M379.000000,659.000000 C252.666687,659.000000 126.833382,659.000000 1.000051,659.000000 C1.000034,439.666718 1.000034,220.333450 1.000017,1.000139 C223.666565,1.000093 446.333130,1.000093 668.999756,1.000046 C668.999878,220.333191 668.999878,439.666382 668.999939,658.999756 C572.500000,659.000000 476.000000,659.000000 379.000000,659.000000 M568.623413,444.914734 C586.112549,436.090088 602.005737,425.127045 615.080444,410.359955 C626.101990,397.911774 625.439514,382.689789 613.480713,371.871033 C610.428406,369.109680 607.976685,365.676453 605.302063,362.507172 C593.328613,348.318878 581.385681,334.104767 569.409607,319.918671 C558.823303,307.378815 548.216614,294.856171 537.602661,282.339722 C525.913696,268.555542 514.225586,254.770538 502.500854,241.016830 C492.173340,228.902145 481.754333,216.865311 471.452118,204.729233 C461.154144,192.598160 450.997162,180.347366 440.693207,168.221405 C430.384857,156.090332 419.917389,144.094376 409.616638,131.956894 C395.458252,115.273895 381.392151,98.512535 367.284424,81.786514 C357.131256,69.748970 347.002228,57.690788 336.775604,45.715954 C335.789154,44.560883 334.187653,43.931049 332.372955,42.777622 C331.920654,42.175285 331.468353,41.572945 331.016418,40.233395 C329.245575,35.939369 325.198700,33.497849 320.143738,34.048100 C304.069946,29.786461 292.782043,34.083565 283.750885,48.063530 C222.780197,142.444427 161.824600,236.835052 100.877678,331.231293 C80.562225,362.696411 60.272072,394.177917 40.008533,425.676453 C36.947121,430.435242 35.300068,435.488220 38.003273,441.781219 C40.646378,444.598999 42.873775,448.038574 46.002354,450.130219 C62.188522,460.951752 78.621468,471.403473 94.938538,482.029968 C153.654053,520.268433 212.230484,558.722778 271.145203,596.651611 C288.220734,607.644714 306.963043,607.363770 324.249054,597.505676 C347.361267,584.324890 369.564270,569.550720 392.168274,555.477783 C437.375031,527.332642 482.628998,499.263000 527.775635,471.021729 C541.295227,462.564606 554.523315,453.641541 568.623413,444.914734 z'
+            );
+            const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path2.setAttribute('fill', '#377592');
+            path2.setAttribute(
+                'd',
+                'M331.016052,40.970612 C331.468353,41.572945 331.920654,42.175285 332.694397,43.259838 C333.910400,45.143818 334.823914,46.533913 335.696899,47.948994 C412.068909,171.743790 488.455902,295.529358 564.712463,419.395264 C566.816833,422.813538 567.518250,427.095612 568.413086,430.980377 C402.306732,431.015442 236.661133,431.035828 71.015556,431.117584 C65.876167,431.120117 60.660439,431.322540 55.616825,432.208771 C48.957840,433.378845 41.987877,434.439240 37.952137,441.061707 C35.300068,435.488220 36.947121,430.435242 40.008533,425.676453 C60.272072,394.177917 80.562225,362.696411 100.877678,331.231293 C161.824600,236.835052 222.780197,142.444427 283.750885,48.063530 C292.782043,34.083565 304.069946,29.786461 320.749512,34.369850 C324.575562,36.784607 327.795807,38.877609 331.016052,40.970612 z'
+            );
+            const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path3.setAttribute('fill', '#8AB0BC');
+            path3.setAttribute(
+                'd',
+                'M37.977707,441.421448 C41.987877,434.439240 48.957840,433.378845 55.616825,432.208771 C60.660439,431.322540 65.876167,431.120117 71.015556,431.117584 C236.661133,431.035828 402.306732,431.015442 568.712769,431.257385 C568.943726,435.996582 568.414368,440.464264 567.885010,444.931946 C554.523315,453.641541 541.295227,462.564606 527.775635,471.021729 C482.628998,499.263000 437.375031,527.332642 392.168274,555.477783 C369.564270,569.550720 347.361267,584.324890 324.249054,597.505676 C306.963043,607.363770 288.220734,607.644714 271.145203,596.651611 C212.230484,558.722778 153.654053,520.268433 94.938538,482.029968 C78.621468,471.403473 62.188522,460.951752 46.002354,450.130219 C42.873775,448.038574 40.646378,444.598999 37.977707,441.421448 z'
+            );
+            const path4 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path4.setAttribute('fill', '#D0E2E4');
+            path4.setAttribute(
+                'd',
+                'M568.254211,444.923340 C568.414368,440.464264 568.943726,435.996582 569.173462,431.251892 C567.518250,427.095612 566.816833,422.813538 564.712463,419.395264 C488.455902,295.529358 412.068909,171.743790 335.696899,47.948994 C334.823914,46.533913 333.910400,45.143818 332.943726,43.399731 C334.187653,43.931049 335.789154,44.560883 336.775604,45.715954 C347.002228,57.690788 357.131256,69.748970 367.284424,81.786514 C381.392151,98.512535 395.458252,115.273895 409.616638,131.956894 C419.917389,144.094376 430.384857,156.090332 440.693207,168.221405 C450.997162,180.347366 461.154144,192.598160 471.452118,204.729233 C481.754333,216.865311 492.173340,228.902145 502.500854,241.016830 C514.225586,254.770538 525.913696,268.555542 537.602661,282.339722 C548.216614,294.856171 558.823303,307.378815 569.409607,319.918671 C581.385681,334.104767 593.328613,348.318878 605.302063,362.507172 C607.976685,365.676453 610.428406,369.109680 613.480713,371.871033 C625.439514,382.689789 626.101990,397.911774 615.080444,410.359955 C602.005737,425.127045 586.112549,436.090088 568.254211,444.923340 z'
+            );
+            svg.appendChild(path1);
+            svg.appendChild(path2);
+            svg.appendChild(path3);
+            svg.appendChild(path4);
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', '310');
+            text.setAttribute('y', '310');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('dominant-baseline', 'central');
+            text.setAttribute('font-size', '200');
+            text.setAttribute('font-weight', '700');
+            text.setAttribute(
+                'font-family',
+                'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif'
+            );
+            text.setAttribute('fill', '#f9f9fa');
+            text.style.userSelect = 'none';
+            text.textContent = value;
+            svg.appendChild(text);
+
+            d8Face.appendChild(svg);
+        }
+
+        /**
+         * Updates the dice value labels below each dice
+         */
+        function updateDiceLabels() {
+            d6Label.textContent = `${t('d6')}: ${d6Value}`;
+            d8Label.textContent = `${t('d8')}: ${d8Value}`;
+        }
+
+        /**
+         * Updates all UI text elements with current language translations
+         * Called when language changes or on initial load
+         */
+        function updateUIText() {
+            document.title = t('title');
+            const titleHeader = document.querySelector('.title-header');
+            if (titleHeader) titleHeader.textContent = t('title');
+
+            if (shuffleButton) {
+                shuffleButton.textContent = `🎲 ${t('shuffleTopic')}`;
+                shuffleButton.setAttribute('aria-label', t('shuffleTopic'));
+            }
+
+            if (topicLabel && currentTopic) {
+                topicLabel.textContent = `${t('topic')}: ${currentTopic}`;
+            } else if (topicLabel) {
+                topicLabel.textContent = `${t('topic')}: ${t('loading')}`;
+            }
+
+            if (accentPicker) {
+                accentPicker.setAttribute('aria-label', t('accentColor'));
+            }
+
+            if (darkModeCheckbox) {
+                darkModeCheckbox.setAttribute('aria-label', t('toggleDarkMode'));
+                darkModeCheckbox.setAttribute('aria-checked', darkMode);
+            }
+
+            updateDiceLabels();
+            renderAccentButtons();
+
+            // Update stats labels
+            if (statsTitle) statsTitle.textContent = t('rollStatistics');
+            if (d6StatsTitle) d6StatsTitle.textContent = t('d6Rolls');
+            if (d8StatsTitle) d8StatsTitle.textContent = t('d8Rolls');
+
+            // Update help modal
+            const modalTitle = document.getElementById('helpModalTitle');
+            if (modalTitle) modalTitle.textContent = t('keyboardShortcuts');
+            renderShortcutsList();
+        }
+
+        /**
+         * Generates a random D6 value (1-6)
+         * @returns {number} Random number between 1 and 6
+         */
+        function getRandomD6() {
+            return Math.floor(Math.random() * 6) + 1;
+        }
+
+        /**
+         * Generates a random D8 value (1-8)
+         * @returns {number} Random number between 1 and 8
+         */
+        function getRandomD8() {
+            return Math.floor(Math.random() * 8) + 1;
+        }
+
+        function rollBothDice() {
+            if (isRolling) return;
+            isRolling = true;
+
+            d6Face.classList.add('rolling');
+            d8Face.classList.add('rolling');
+
+            // Animate D6 - change face every 120ms
+            d6Interval = setInterval(() => {
+                let val = getRandomD6();
+                renderD6Face(val, true);
+            }, 125);
+
+            // Animate D8 - change face every 120ms
+            d8Interval = setInterval(() => {
+                let val = getRandomD8();
+                renderD8Face(val, true);
+            }, 125);
+
+            // Stop animation and set final values after 2 seconds
+            rollTimeout = setTimeout(() => {
+                // Clean up intervals safely
+                if (d6Interval) {
+                    clearInterval(d6Interval);
+                    d6Interval = null;
+                }
+                if (d8Interval) {
+                    clearInterval(d8Interval);
+                    d8Interval = null;
+                }
+
+                // Set final dice values
+                d6Value = getRandomD6();
+                d8Value = getRandomD8();
+
+                // Update statistics
+                d6Stats[d6Value]++;
+                d8Stats[d8Value]++;
+
+                // Render final faces
+                renderD6Face(d6Value, false);
+                renderD8Face(d8Value, false);
+                updateDiceLabels();
+
+                // Update statistics charts
+                updateStats();
+
+                // Re-enable rolling
+                isRolling = false;
+
+                // Clean up timeout reference
+                rollTimeout = null;
+            }, 750);
+        }
+
+        function updateGrid() {
+            gridContainer.innerHTML = '';
+
+            // Empty corner
+            const emptyCorner = document.createElement('div');
+            gridContainer.appendChild(emptyCorner);
+
+            // Column headers (A-D)
+            for (let col = 0; col < 4; col++) {
+                const header = document.createElement('div');
+                header.className = 'grid-header';
+                header.textContent = String.fromCodePoint(65 + col); // 65 is 'A'
+                gridContainer.appendChild(header);
+            }
+
+            // Rows
+            for (let row = 0; row < 4; row++) {
+                const rowHeader = document.createElement('div');
+                rowHeader.className = 'grid-header';
+                rowHeader.textContent = String(row + 1);
+                gridContainer.appendChild(rowHeader);
+
+                // Grid cells
+                for (let col = 0; col < 4; col++) {
+                    const idx = row * 4 + col;
+                    if (idx < currentItems.length) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.textContent = currentItems[idx];
+                        cell.style.animationDelay = `${idx * 0.05}s`;
+                        gridContainer.appendChild(cell);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Shuffles to a new random topic and updates the grid
+         */
+        function shuffleTopic() {
+            [currentTopic, currentItems] = getRandomTopicAndItems();
+            topicLabel.textContent = `${t('topic')}: ${currentTopic}`;
+            updateGrid();
+            // Roll dice when topic is shuffled
+            if (!isRolling) {
+                rollBothDice();
+            }
+        }
+
+        /**
+         * Selects a random topic and returns 16 random items from it
+         * @returns {Array} [topicName, itemsArray] - Topic name and array of 16 items
+         */
+        function getRandomTopicAndItems() {
+            const topics = Object.keys(data);
+            // Pick a random topic
+            const topic = topics[Math.floor(Math.random() * topics.length)];
+            const allItems = data[topic];
+            const items = [];
+            // Shuffle items and take first 16
+            const shuffled = [...allItems].sort(() => Math.random() - 0.5);
+            const count = Math.min(16, shuffled.length);
+            for (let i = 0; i < count; i++) {
+                items.push(shuffled[i]);
+            }
+            return [topic, items];
+        }
+
+        function initDiceDisplay() {
+            renderD6Face(d6Value, false);
+            renderD8Face(d8Value, false);
+            updateDiceLabels();
+        }
+
+        /**
+         * Updates the statistics bar charts
+         * Renders bar graphs showing frequency of each dice value
+         */
+        function updateStats() {
+            if (!d6StatsChart || !d8StatsChart) return;
+
+            // Find max frequency for scaling
+            const d6Max = Math.max(...Object.values(d6Stats), 1);
+            const d8Max = Math.max(...Object.values(d8Stats), 1);
+
+            // Render D6 chart
+            d6StatsChart.innerHTML = '';
+            for (let i = 1; i <= 6; i++) {
+                const count = d6Stats[i] || 0;
+                const percentage = d6Max > 0 ? (count / d6Max) * 100 : 0;
+
+                const barContainer = document.createElement('div');
+                barContainer.className = 'stats-bar-container';
+
+                const bar = document.createElement('div');
+                bar.className = 'stats-bar';
+                bar.style.height = `${percentage}%`;
+                bar.setAttribute('aria-label', `${i}: ${count} rolls`);
+
+                // Number (dice value) above the bar
+                const label = document.createElement('div');
+                label.className = 'stats-bar-label';
+                label.textContent = i;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+
+                // Count (frequency) at the bottom
+                const valueLabel = document.createElement('div');
+                valueLabel.className = 'stats-bar-value';
+                valueLabel.textContent = count;
+                barContainer.appendChild(valueLabel);
+                d6StatsChart.appendChild(barContainer);
+            }
+
+            // Render D8 chart
+            d8StatsChart.innerHTML = '';
+            for (let i = 1; i <= 8; i++) {
+                const count = d8Stats[i] || 0;
+                const percentage = d8Max > 0 ? (count / d8Max) * 100 : 0;
+
+                const barContainer = document.createElement('div');
+                barContainer.className = 'stats-bar-container';
+
+                const bar = document.createElement('div');
+                bar.className = 'stats-bar';
+                bar.style.height = `${percentage}%`;
+                bar.setAttribute('aria-label', `${i}: ${count} rolls`);
+
+                // Number (dice value) above the bar
+                const label = document.createElement('div');
+                label.className = 'stats-bar-label';
+                label.textContent = i;
+                bar.appendChild(label);
+
+                barContainer.appendChild(bar);
+
+                // Count (frequency) at the bottom
+                const valueLabel = document.createElement('div');
+                valueLabel.className = 'stats-bar-value';
+                valueLabel.textContent = count;
+                barContainer.appendChild(valueLabel);
+                d8StatsChart.appendChild(barContainer);
+            }
+        }
+
+        /**
+         * Renders accent color picker buttons
+         * - Creates radio button group for accessibility
+         * - Adds keyboard navigation (arrow keys)
+         * - Highlights currently selected color
+         */
+        function renderAccentButtons() {
+            accentPicker.innerHTML = '';
+            accentPicker.setAttribute('role', 'radiogroup');
+            accentPicker.setAttribute('aria-label', t('accentColor'));
+            const accent = getAccentColor();
+            accentPalette.forEach((pal, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'accent-btn';
+                btn.setAttribute('role', 'radio');
+                btn.setAttribute('tabindex', '0');
+                const isSelected = pal.color.toLowerCase() === accent.toLowerCase();
+                if (isSelected) {
+                    btn.classList.add('selected');
+                    btn.setAttribute('aria-checked', 'true');
+                    btn.setAttribute('tabindex', '0');
+                } else {
+                    btn.setAttribute('aria-checked', 'false');
+                    btn.setAttribute('tabindex', '-1');
+                }
+                btn.title = `${pal.name} - ${t('selectAccent')}`;
+                btn.setAttribute('aria-label', `${pal.name} ${t('currentAccent')}`);
+                btn.style.color = pal.color;
+                const dot = document.createElement('div');
+                dot.className = 'accent-dot';
+                dot.setAttribute('aria-hidden', 'true');
+                btn.appendChild(dot);
+
+                // Click handler
+                btn.addEventListener('click', function () {
+                    setAccentColor(pal.color);
+                    renderAccentButtons();
+                });
+
+                // Keyboard navigation
+                btn.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setAccentColor(pal.color);
+                        renderAccentButtons();
+                    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const nextIndex = (index + 1) % accentPalette.length;
+                        const nextBtn = accentPicker.children[nextIndex];
+                        if (nextBtn) {
+                            nextBtn.focus();
+                        }
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prevIndex = (index - 1 + accentPalette.length) % accentPalette.length;
+                        const prevBtn = accentPicker.children[prevIndex];
+                        if (prevBtn) {
+                            prevBtn.focus();
+                        }
+                    }
+                });
+
+                accentPicker.appendChild(btn);
+            });
+        }
+        /**
+         * Gets the current accent color from CSS variable
+         * @returns {string} Current accent color hex code
+         */
+        function getAccentColor() {
+            // Read from :root CSS variable
+            const s = getComputedStyle(document.documentElement);
+            return s.getPropertyValue('--color-accent').trim();
+        }
+        /* ============================================
+        URL PARAMETER HELPERS
+        For persisting theme settings in URL
+        ============================================ */
+        /**
+         * Gets a URL parameter value
+         * @param {string} name - Parameter name
+         * @returns {string|null} Parameter value or null
+         */
+        function getURLParam(name) {
+            const params = new URLSearchParams(globalThis.location.search);
+            return params.get(name);
+        }
+
+        /**
+         * Sets or removes a URL parameter (updates URL without page reload)
+         * @param {string} name - Parameter name
+         * @param {string|null} value - Parameter value (null to remove)
+         */
+        function setURLParam(name, value) {
+            const url = new URL(globalThis.location);
+            if (value) {
+                url.searchParams.set(name, value);
+            } else {
+                url.searchParams.delete(name);
+            }
+            globalThis.history.replaceState({}, '', url);
+        }
+
+        /* ============================================
+        COLOR UTILITIES
+        ============================================ */
+        /**
+         * Validates if a string is a valid hex color
+         * @param {string} color - Color string to validate
+         * @returns {boolean} True if valid hex color
+         */
+        function isValidHexColor(color) {
+            if (!color) return false;
+            // Remove # if present and check if it's a valid hex color
+            const hex = color.startsWith('#') ? color.slice(1) : color;
+            // Check for 3 or 6 digit hex codes
+            return /^[0-9A-Fa-f]{3}$|^[0-9A-Fa-f]{6}$/.test(hex);
+        }
+
+        /**
+         * Normalizes hex color to always include # prefix
+         * @param {string} color - Color string
+         * @returns {string} Normalized color with #
+         */
+        function normalizeHexColor(color) {
+            if (!color) return color;
+            return color.startsWith('#') ? color : '#' + color;
+        }
+
+        /**
+         * Removes # prefix from hex color (for URL storage)
+         * @param {string} color - Color string
+         * @returns {string} Color without #
+         */
+        function hexWithoutHash(color) {
+            if (!color) return color;
+            return color.startsWith('#') ? color.slice(1) : color;
+        }
+
+        /**
+         * Calculates relative luminance of a color using WCAG formula
+         * Determines if text should be dark or light for contrast
+         * @param {string} hex - Hex color code
+         * @returns {boolean} True if color is light (use dark text), false if dark (use light text)
+         */
+        function isLightColor(hex) {
+            if (!hex) return false;
+            // Remove # if present
+            const color = hex.startsWith('#') ? hex.slice(1) : hex;
+
+            // Expand 3-digit hex to 6-digit
+            const fullHex =
+                color.length === 3
+                    ? color
+                        .split('')
+                        .map(c => c + c)
+                        .join('')
+                    : color;
+
+            // Convert to RGB
+            const r = Number.parseInt(fullHex.substring(0, 2), 16);
+            const g = Number.parseInt(fullHex.substring(2, 4), 16);
+            const b = Number.parseInt(fullHex.substring(4, 6), 16);
+
+            // Calculate relative luminance using WCAG formula
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+            // If luminance > 0.5, it's a light color (use dark text)
+            return luminance > 0.5;
+        }
+
+        /**
+         * Sets the accent color and updates theme
+         * - Updates CSS variables
+         * - Calculates appropriate text/border colors based on lightness
+         * - Updates URL parameter
+         * @param {string} accent - Hex color code (with or without #)
+         */
+        function setAccentColor(accent) {
+            // Normalize accent color (ensure it has #)
+            const normalizedAccent = normalizeHexColor(accent);
+
+            // Set via root (for light mode)
+            document.documentElement.style.setProperty('--color-accent', normalizedAccent);
+
+            // Also set on body if dark mode is active (to override .dark-mode class)
+            if (darkMode) {
+                document.body.style.setProperty('--color-accent', normalizedAccent);
+            }
+
+            // Intelligently set accent text color based on lightness
+            const isLight = isLightColor(normalizedAccent);
+            const accentTextColor = isLight ? '#000000' : '#ffffff';
+            const accentBorderColor = isLight ? '#333333' : '#ffffff';
+
+            document.documentElement.style.setProperty('--color-accent-text', accentTextColor);
+            document.documentElement.style.setProperty('--color-accent-border', accentBorderColor);
+            if (darkMode) {
+                document.body.style.setProperty('--color-accent-text', accentTextColor);
+                document.body.style.setProperty('--color-accent-border', accentBorderColor);
+            }
+
+            // Set matching primaries for a pleasant theme (if known)
+            const m = accentPrimaries[normalizedAccent];
+            if (m) {
+                document.documentElement.style.setProperty('--color-primary', m.primary);
+                document.documentElement.style.setProperty('--color-primary-dark', m.primaryDark);
+                // Also set on body if dark mode is active
+                if (darkMode) {
+                    document.body.style.setProperty('--color-primary', m.primary);
+                    document.body.style.setProperty('--color-primary-dark', m.primaryDark);
+                }
+            }
+
+            // Update URL parameter (store without # to avoid %23 encoding)
+            setURLParam('accent', hexWithoutHash(normalizedAccent));
+
+            renderAccentButtons();
+        }
+
+        /**
+         * Toggles dark mode on/off
+         * - Preserves accent color when switching modes
+         * - Updates URL parameter
+         * @param {boolean} on - True to enable dark mode, false to disable
+         */
+        function setDarkMode(on) {
+            darkMode = on;
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                // Preserve the current accent color and text color when entering dark mode
+                const currentAccent = getAccentColor();
+                document.body.style.setProperty('--color-accent', currentAccent);
+                const s = getComputedStyle(document.documentElement);
+                const currentAccentText = s.getPropertyValue('--color-accent-text').trim();
+                const currentAccentBorder = s.getPropertyValue('--color-accent-border').trim();
+                if (currentAccentText) {
+                    document.body.style.setProperty('--color-accent-text', currentAccentText);
+                }
+                if (currentAccentBorder) {
+                    document.body.style.setProperty('--color-accent-border', currentAccentBorder);
+                }
+                // Preserve primary colors if they were customized
+                const currentPrimary = s.getPropertyValue('--color-primary').trim();
+                const currentPrimaryDark = s.getPropertyValue('--color-primary-dark').trim();
+                if (currentPrimary && currentPrimaryDark) {
+                    document.body.style.setProperty('--color-primary', currentPrimary);
+                    document.body.style.setProperty('--color-primary-dark', currentPrimaryDark);
+                }
+            } else {
+                document.body.classList.remove('dark-mode');
+                // Clear inline styles when leaving dark mode (let CSS handle it)
+                document.body.style.removeProperty('--color-accent');
+                document.body.style.removeProperty('--color-accent-text');
+                document.body.style.removeProperty('--color-accent-border');
+                document.body.style.removeProperty('--color-primary');
+                document.body.style.removeProperty('--color-primary-dark');
+            }
+
+            // Update URL parameter
+            setURLParam('dark', darkMode ? '1' : null);
+
+            renderSunMoonButton();
+        }
+
+        /**
+         * Cycles through accent color palette
+         * @param {string} direction - 'next' or 'prev' to cycle forward or backward
+         */
+        function cycleAccentColor(direction) {
+            const currentAccent = getAccentColor();
+            const normalizedCurrent = normalizeHexColor(currentAccent);
+
+            // Find current index in palette
+            let currentIndex = accentPalette.findIndex(p => normalizeHexColor(p.color) === normalizedCurrent);
+
+            // If not found or custom color, start from first/last
+            if (currentIndex === -1) {
+                currentIndex = direction === 'next' ? -1 : accentPalette.length;
+            }
+
+            // Calculate next/prev index
+            let newIndex;
+            if (direction === 'next') {
+                newIndex = (currentIndex + 1) % accentPalette.length;
+            } else {
+                newIndex = (currentIndex - 1 + accentPalette.length) % accentPalette.length;
+            }
+
+            // Set new accent color
+            setAccentColor(accentPalette[newIndex].color);
+        }
+
+        /**
+         * Opens the help modal
+         */
+        function openHelpModal() {
+            if (helpModal) {
+                helpModal.classList.add('active');
+                helpModal.setAttribute('aria-hidden', 'false');
+                // Focus the close button for accessibility
+                if (modalClose) {
+                    modalClose.focus();
+                }
+            }
+        }
+
+        /**
+         * Closes the help modal
+         */
+        function closeHelpModal() {
+            if (helpModal) {
+                helpModal.classList.remove('active');
+                helpModal.setAttribute('aria-hidden', 'true');
+                // Return focus to help button
+                if (helpButton) {
+                    helpButton.focus();
+                }
+            }
+        }
+
+        /**
+         * Renders the keyboard shortcuts list in the modal
+         */
+        function renderShortcutsList() {
+            if (!shortcutsList) return;
+
+            shortcutsList.innerHTML = '';
+
+            const shortcuts = [
+                { key: 'R', description: t('shortcutShuffle') },
+                { key: ['⌘', '/'], description: t('keyboardShortcuts') },
+                { key: 'D', description: t('shortcutDarkMode') },
+                { key: ['⌥', '←'], description: t('shortcutCycleAccent') + ' (Previous)' },
+                { key: ['⌥', '→'], description: t('shortcutCycleAccent') + ' (Next)' },
+            ];
+
+            shortcuts.forEach(shortcut => {
+                const item = document.createElement('div');
+                item.className = 'shortcut-item';
+
+                const description = document.createElement('span');
+                description.className = 'shortcut-description';
+                description.textContent = shortcut.description;
+
+                const key = document.createElement('span');
+                key.className = 'shortcut-key';
+
+                // Handle both string and array key formats
+                const keyParts = Array.isArray(shortcut.key) ? shortcut.key : shortcut.key.split(' ');
+                keyParts.forEach((part, index) => {
+                    if (index > 0) {
+                        key.appendChild(document.createTextNode(' + '));
+                    }
+                    const kbd = document.createElement('kbd');
+                    kbd.textContent = part;
+                    key.appendChild(kbd);
+                });
+
+                item.appendChild(description);
+                item.appendChild(key);
+                shortcutsList.appendChild(item);
+            });
+        }
+
+        /**
+         * Renders the sun/moon icons in the dark mode toggle
+         * - Shows sun when dark mode is OFF (light mode)
+         * - Shows moon when dark mode is ON (dark mode)
+         * - Only one icon visible at a time
+         * - Updates checkbox ARIA attributes
+         */
+        function renderSunMoonButton() {
+            if (!dmToggleIcon) return;
+
+            dmToggleIcon.innerHTML = '';
+
+            // Show sun when in light mode, moon when in dark mode
+            if (darkMode) {
+                // Dark mode: show moon on right
+                dmToggleIcon.innerHTML = `
+                    <svg class="moonface" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 11.807A9.002 9.002 0 0 1 10.049 2a9.942 9.942 0 0 0-5.12 2.735c-3.905 3.905-3.905 10.237 0 14.142 3.906 3.906 10.237 3.905 14.143 0a9.946 9.946 0 0 0 2.735-5.119A9.003 9.003 0 0 1 12 11.807z" fill="#ffd755"/>
+                    </svg>
+                    `;
+            } else {
+                // Light mode: show sun on left
+                dmToggleIcon.innerHTML = `
+                    <svg class="sunface" width="16" height="16" viewBox="0 0 22 22" fill="none">
+                      <circle cx="11" cy="11" r="6" fill="#FFD755" stroke="gold" stroke-width="1.5"/>
+                      <g stroke="#FFD755" stroke-width="1.1">
+                          <line x1="11" y1="1.8" x2="11" y2="4.1"/>
+                          <line x1="11" y1="17.9" x2="11" y2="20.2"/>
+                          <line x1="1.8" y1="11" x2="4.1" y2="11"/>
+                          <line x1="17.9" y1="11" x2="20.2" y2="11"/>
+                          <line x1="4.8" y1="4.8" x2="6.2" y2="6.2"/>
+                          <line x1="15.8" y1="15.8" x2="17.2" y2="17.2"/>
+                          <line x1="4.8" y1="17.2" x2="6.2" y2="15.8"/>
+                          <line x1="15.8" y1="6.2" x2="17.2" y2="4.8"/>
+                      </g>
+                    </svg>
+                    `;
+            }
+
+            // Update checkbox state and ARIA
+            const checkbox = document.getElementById('darkmodeCheckbox');
+            if (checkbox) {
+                checkbox.checked = darkMode;
+                checkbox.setAttribute('aria-checked', darkMode ? 'true' : 'false');
+                checkbox.setAttribute('aria-label', darkMode ? t('lightMode') : t('darkMode'));
+            }
+        }
+
+        /* ============================================
+        INITIALIZATION
+        ============================================ */
+        /**
+         * Initializes the application
+         * - Loads settings from URL parameters (language, accent, dark mode)
+         * - Sets up event listeners
+         * - Renders initial UI state
+         */
+        function init() {
+            // Load language from URL or detect from browser
+            const urlLang = getURLParam('lang');
+            if (urlLang && translations[urlLang]) {
+                setLanguage(urlLang);
+            } else {
+                document.documentElement.lang = currentLang;
+            }
+
+            // Load theme settings from URL
+            const urlAccent = getURLParam('accent');
+            const urlDark = getURLParam('dark');
+
+            // Set dark mode from URL if present, otherwise use default (true)
+            if (urlDark === null) {
+                // Apply default dark mode state
+                setDarkMode(darkMode);
+            } else {
+                setDarkMode(urlDark === '1' || urlDark === 'true');
+            }
+
+            // Set accent color from URL if present
+            if (urlAccent) {
+                // Validate that it's a valid hex color (allow custom colors not in palette)
+                // URL stores without #, so we normalize it in setAccentColor
+                if (isValidHexColor(urlAccent)) {
+                    setAccentColor(urlAccent); // setAccentColor will normalize it
+                }
+            }
+
+            [currentTopic, currentItems] = getRandomTopicAndItems();
+            updateGrid();
+            initDiceDisplay();
+            // Roll dice when new topic is selected on page load
+            rollBothDice();
+
+            // Initialize statistics display
+            updateStats();
+
+            shuffleButton.addEventListener('click', shuffleTopic);
+
+            renderAccentButtons();
+
+            // Initialize dark mode toggle
+            if (darkModeCheckbox) {
+                darkModeCheckbox.checked = darkMode;
+                renderSunMoonButton();
+
+                darkModeCheckbox.addEventListener('change', function () {
+                    setDarkMode(this.checked);
+                });
+            }
+
+            // Initialize language selector
+            if (languageSelect) {
+                languageSelect.value = currentLang;
+                languageSelect.addEventListener('change', function () {
+                    setLanguage(this.value);
+                });
+            }
+
+            shuffleButton.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    shuffleTopic();
+                }
+            });
+
+            // Update UI text with translations
+            updateUIText();
+
+            // Initialize statistics display
+            updateStats();
+
+            // Initialize help modal
+            if (helpButton) {
+                helpButton.addEventListener('click', openHelpModal);
+            }
+            if (modalClose) {
+                modalClose.addEventListener('click', closeHelpModal);
+            }
+            if (helpModal) {
+                // Close modal when clicking overlay
+                helpModal.addEventListener('click', function (e) {
+                    if (e.target === helpModal) {
+                        closeHelpModal();
+                    }
+                });
+            }
+
+            // Initialize keyboard shortcuts (simplified logic, same behavior)
+            document.addEventListener('keydown', function (e) {
+                const tag = e.target.tagName;
+                if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+
+                const key = e.key;
+                const isR = key === 'r' || key === 'R';
+                const isD = key === 'd' || key === 'D';
+                const isSlash = key === '/' || key === '?';
+                const isArrowUpDown = key === 'ArrowUp' || key === 'ArrowDown';
+                const isArrowLeftRight = key === 'ArrowLeft' || key === 'ArrowRight';
+
+                // ESC to close modal
+                if (key === 'Escape' && helpModal?.classList.contains('active')) {
+                    closeHelpModal();
+                    return;
+                }
+
+                // Cmd+Shift+R or Ctrl+Shift+R: Hard refresh and reset stats
+                if (isR && (e.metaKey || e.ctrlKey) && e.shiftKey) {
+                    e.preventDefault();
+                    Object.keys(d6Stats).forEach(key => (d6Stats[key] = 0));
+                    Object.keys(d8Stats).forEach(key => (d8Stats[key] = 0));
+                    location.reload();
+                    return;
+                }
+
+                // R or Ctrl/Cmd+R (without Shift/Alt): Shuffle topic
+                if (isR && !e.altKey && !e.shiftKey) {
+                    e.preventDefault();
+                    shuffleTopic();
+                    return;
+                }
+
+                // Cmd+/ or Ctrl+/: Open help modal
+                if (isSlash && (e.metaKey || e.ctrlKey)) {
+                    e.preventDefault();
+                    openHelpModal();
+                    return;
+                }
+
+                // D: Toggle dark mode
+                if (isD) {
+                    e.preventDefault();
+                    if (darkModeCheckbox) {
+                        darkModeCheckbox.checked = !darkModeCheckbox.checked;
+                        setDarkMode(darkModeCheckbox.checked);
+                    }
+                    return;
+                }
+
+                // Alt + Up/Down: Toggle dark mode
+                if (e.altKey && !e.metaKey && !e.ctrlKey && isArrowUpDown) {
+                    e.preventDefault();
+                    if (darkModeCheckbox) {
+                        darkModeCheckbox.checked = !darkModeCheckbox.checked;
+                        setDarkMode(darkModeCheckbox.checked);
+                    }
+                    return;
+                }
+
+                // Alt + Left/Right: Cycle accent colors
+                if (e.altKey && !e.metaKey && isArrowLeftRight) {
+                    e.preventDefault();
+                    cycleAccentColor(key === 'ArrowLeft' ? 'prev' : 'next');
+                    return;
+                }
+            });
+        }
+
+        // Initialize app when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            // DOM already loaded
+            init();
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,103 @@
+name: CI
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        container:
+            image: python:3.14-slim
+        strategy:
+            matrix:
+                python-version: ["3.14"]
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install system dependencies
+              run: |
+                  apt-get update -qq
+                  apt-get install -y -qq curl git build-essential
+
+            - name: Install uv
+              run: |
+                  curl -LsSf https://astral.sh/uv/install.sh | sh
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Install dependencies
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv sync --all-groups
+
+            - name: Run tests with coverage
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv run pytest --cov --cov-report=term-missing --cov-report=xml
+
+    lint:
+        name: Lint
+        runs-on: ubuntu-latest
+        container:
+            image: python:3.14-slim
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install system dependencies
+              run: |
+                  apt-get update -qq
+                  apt-get install -y -qq curl git build-essential
+
+            - name: Install uv
+              run: |
+                  curl -LsSf https://astral.sh/uv/install.sh | sh
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Install dependencies
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv sync --all-groups
+
+            - name: Run ruff lint
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv run ruff check .
+
+            - name: Run ruff format check
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv run ruff format --check .
+
+    type-check:
+        name: Type Check
+        runs-on: ubuntu-latest
+        container:
+            image: python:3.14-slim
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install system dependencies
+              run: |
+                  apt-get update -qq
+                  apt-get install -y -qq curl git build-essential
+
+            - name: Install uv
+              run: |
+                  curl -LsSf https://astral.sh/uv/install.sh | sh
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+            - name: Install dependencies
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv sync --all-groups
+
+            - name: Run type check
+              run: |
+                  export PATH="$HOME/.cargo/bin:$PATH"
+                  uv run ty check
