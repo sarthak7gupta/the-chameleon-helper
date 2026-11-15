@@ -1,0 +1,46 @@
+# Multiplayer release stack
+
+Merge in order: **v1 LAN → v2 private online rooms → v3 public guest rooms → v4 accounts**. Each PR targets the preceding branch. Retarget the next PR to `main` after its base merges; preserve commit ancestry (merge commits rather than squash, or restack the remaining branches).
+
+## v1: same Wi-Fi
+
+Requires Node.js 24+. No runtime dependencies, cloud service, or account:
+
+```sh
+npm start
+```
+
+Open `http://localhost:3000` on the host computer, create a room, and share the invite using the **Wi-Fi address** printed in the terminal, for example `http://192.168.1.10:3000/?room=AB12CD34`. Invites created at localhost use the detected Wi-Fi address automatically; verify it matches the launcher output if multiple adapters/VPNs are active. Guests open it in their phone browsers. The launcher must keep running; firewall permission may be needed. Guest Wi-Fi/client isolation can prevent connections. `PORT=4000 npm start` changes the port.
+
+A web page cannot bind a listening TCP port or serve itself from a LAN IP. The local launcher is therefore required; “no backend” here means **no hosted backend**. The host computer is the authority and serves the deployed frontend's same static files. The HTTPS GitHub Pages frontend shows launcher setup and can navigate to the HTTP Wi-Fi address. It never tries mixed-content API calls to a local network.
+
+Rooms expire after 24 hours without an action; launcher restart discards rooms. Each device has an HttpOnly session cookie for seven days; refreshing resumes membership. Use distinct browser profiles/devices for different players. Clearing cookies loses a guest seat; the host can abandon a round and remove the seat. This LAN traffic is HTTP: play on a trusted network.
+
+## Rules and product decisions
+
+Based on the [official rules](https://www.crownandandrews.com/wp-content/uploads/2017/10/Chameleon-The-Rules.pdf). Roles and a secret word replace physical code cards/dice. One shared 4×4 topic is randomly selected from the existing repository's topics. The original dice helper remains at `/helper.html` (including its existing language/theme controls).
+
+3–8 players. Reveal privately; all players ready before clues. Ordered one-word clues start with the dealer. Repeated clues and self-voting are allowed. Discuss in person or via a separate voice call, then the host opens sealed voting. Dealer chooses only among tied leaders. Chameleon guesses once, twice with 3 players. The topic hides after clues with 7–8 players. Escape +2, correct guess +1, failed guess everyone else +2. First to 5 wins; simultaneous winners share the win. Previous Chameleon deals next.
+
+Host may abandon a stalled round without awarding points. Seats remain until leaving/removal; a temporary network loss never deletes players. Host transfer happens on leaving in the lobby. Leaving after a result reopens the lobby and resets the match so changed rosters cannot carry unfair scores.
+
+## Trust boundary
+
+The authority validates membership, host/dealer permissions, phase, turn, target, lengths, and revision on every command. Commands run against a copy and commit only on success. Stale/duplicate commands get 409; the client refreshes and retries once only if the round and phase are unchanged. It never retries after an uncertain network outcome. Votes stay sealed until complete. Chameleon responses contain no secret index, selected word, or identities of other roles before accusation/reveal. All topic words are public until the face-down rule. The host process itself is trusted; it can inspect memory. Client rendering escapes player content. Same-origin JSON-only writes, rate limits, request caps, static-file allowlist and a strict CSP protect the multiplayer surface. No passwords/secrets belong in URLs.
+
+## Verification
+
+```sh
+npm ci
+npm test
+npx playwright install --with-deps chromium webkit
+npm run test:browser
+npm run build
+uv sync --all-groups
+uv run pytest
+uv run ruff check .
+uv run ruff format --check .
+uv run ty check
+```
+
+Node tests exercise all game outcomes, 3/4/6/7/8 players, role projection, sealed voting, ties, scoring, turn/phase/host guards, capacity, stale actions, malformed HTTP, origins, and static-file protection. Playwright uses three isolated browser contexts at phone dimensions for a full round and refresh, plus keyboard modal dismissal and overflow. Real phones on a shared Wi-Fi still need a manual smoke test (network routing/firewalls are environment-specific).
