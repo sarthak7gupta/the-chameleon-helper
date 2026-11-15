@@ -19,6 +19,7 @@ export function createRoom(code, session, name) {
     hostId: player.id, dealerId: player.id, players: [player] };
 }
 export function joinRoom(room, session, name) {
+  requireThat(!room.blockedSessions?.includes(session), 'The host removed you from this room.', 403);
   const existing = room.players.find(p => p.session === session);
   if (existing) return existing;
   requireThat(room.phase === 'lobby', 'This game has started. Join after the host opens a new game.', 409);
@@ -113,6 +114,8 @@ export function act(room, session, action) {
     case 'remove':
       host(); phase('lobby'); requireThat(action.target !== p.id, 'Use Leave room to leave.');
       requireThat(room.players.some(q => q.id === action.target), 'Player not found.');
+      room.blockedSessions ||= [];
+      room.blockedSessions.push(room.players.find(q => q.id === action.target).session);
       room.players = room.players.filter(q => q.id !== action.target);
       if (!room.players.some(q => q.id === room.dealerId)) room.dealerId = room.hostId;
       break;
@@ -136,7 +139,7 @@ export function view(room, session) {
   const active = room.phase !== 'lobby';
   const ended = room.phase === 'result';
   const hidden = room.players.length >= 7 && ['discussion', 'vote', 'tie', 'guess'].includes(room.phase);
-  return { code: room.code, revision: room.revision, phase: room.phase, round: room.round,
+  return { code: room.code, visibility: room.visibility || 'private', revision: room.revision, phase: room.phase, round: room.round,
     me: me.id, hostId: room.hostId, dealerId: room.dealerId,
     players: room.players.map(p => ({ id: p.id, name: p.name, score: p.score, ready: p.ready })),
     topic: active ? room.topic : null, words: active && !hidden ? room.words : [], topicHidden: active && hidden,

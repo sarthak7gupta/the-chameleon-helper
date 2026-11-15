@@ -24,7 +24,7 @@ Deploy the included Docker service behind HTTPS with a durable volume:
 MODE=online PUBLIC_ORIGIN=https://game.example.com DATABASE_PATH=/persistent/chameleon.sqlite npm start
 ```
 
-Friends open that public address and join with a private room code. No local link or account is needed. See the deployment constraints in [the multiplayer guide](docs/MULTIPLAYER.md).
+Friends open that public address and join with a private room code. No local link or account is needed. Hosts can also choose **Public** to list a waiting table; guests can join from the home screen without logging in. See the deployment constraints in [the multiplayer guide](docs/MULTIPLAYER.md).
 
 ## Original helpers
 
