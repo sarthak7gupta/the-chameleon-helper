@@ -1,0 +1,14 @@
+services:
+  chameleon:
+    build: .
+    restart: unless-stopped
+    environment:
+      MODE: online
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the public HTTPS origin}
+      DATABASE_PATH: /data/chameleon.sqlite
+    ports:
+      - '127.0.0.1:3000:3000'
+    volumes:
+      - chameleon-data:/data
+volumes:
+  chameleon-data:
