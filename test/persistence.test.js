@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { openDatabase } from '../game/database.js';
 import { createApp } from '../server.js';
 
-test('online room and hashed-cookie session survive process restart', async t => {
+test('online room, hashed-cookie session and account survive process restart', async t => {
   const dir = await mkdtemp(join(tmpdir(), 'chameleon-'));
   t.after(() => rm(dir, { recursive: true, force: true }));
   const databasePath = join(dir, 'game.sqlite');
@@ -30,9 +30,12 @@ test('online room and hashed-cookie session survive process restart', async t =>
   const created = await request('/api/rooms', '', { name: 'Host' }); assert.equal(created.status, 201);
   assert.match(created.cookie, /HttpOnly/); assert.match(created.cookie, /Secure/); assert.match(created.cookie, /SameSite=Strict/);
   const code = created.data.code, cookie = created.cookie.split(';')[0];
+  const registered = await request('/api/auth/register', cookie, { name: 'Host', password: 'longenough8' }); assert.equal(registered.status, 200);
   await close();
   const db = openDatabase(databasePath);
   assert.equal([...db.sessions.keys()].includes(cookie.split('=')[1]), false);
+  const [account] = [...db.accounts.values()];
+  assert.equal(account.name, 'Host'); assert.doesNotMatch(account.hash, /longenough8/); assert.ok(account.salt);
   db.close();
   app = createApp({ mode: 'online', publicOrigin: origin, databasePath }); await listen();
 
@@ -40,6 +43,9 @@ test('online room and hashed-cookie session survive process restart', async t =>
   assert.equal(resumed.status, 200); assert.equal(resumed.data.me, created.data.me);
   assert.equal((await request(`/api/rooms/${code}`, '')).status, 403);
   assert.equal((await request('/api/rooms', cookie, { name: 'Another' })).status, 201);
+  const afterRestart = await request('/api/config', cookie);
+  assert.equal(afterRestart.data.account, 'Host');
+  assert.equal((await request('/api/auth/login', '', { name: 'Host', password: 'longenough8' })).status, 200);
 });
 test('online startup requires exact HTTPS origin; LAN remains ephemeral', () => {
   assert.throws(() => createApp({ mode: 'online' }), /PUBLIC_ORIGIN/);
