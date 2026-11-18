@@ -35,6 +35,7 @@ npm ci
 npm test
 npx playwright install --with-deps chromium webkit
 npm run test:browser
+npm run test:online
 npm run build
 uv sync --all-groups
 uv run pytest
@@ -60,3 +61,11 @@ Or set `PUBLIC_ORIGIN` and run `docker compose up --build -d`. The container run
 Room and session updates are written durably before acknowledgment. SQLite uses WAL/FULL synchronous mode. Tokens are stored only as SHA-256 hashes; cookie secrets never enter URLs or room views. A restart restores rooms, scores, and guest seats; expiry still applies. LAN mode remains memory-only. **Do not run multiple replicas** against separate files: the in-memory authority requires a single writer. Mount durable storage and back it up (use SQLite's online backup tooling or stop the service before copying the database/WAL). Restore the complete backup before restarting. Database files contain hidden roles and must remain private. Deployments that discard their filesystem do not meet persistence requirements.
 
 GitHub Pages remains the LAN setup frontend, independent of the online service. No online hosting account or paid resource is provisioned by these PRs. Backend deployment requires a chosen HTTPS host with durable storage; the Docker configuration is ready for it.
+
+## v3: public rooms without login
+
+On the online service, hosts choose **Private (default)** or **Public** when creating a room. The home screen lists up to 50 public tables; players enter a display name and choose Join table. No account, email, or local link is needed. Discovery returns only room code, host-chosen display-name title, and player count. It never returns player lists, roles, words, scores, or private room identifiers.
+
+Only lobbies with fewer than eight seats, an unexpired room, and a host seen within the last minute are discoverable. A restarted service lists a room after its host reconnects. Polling refreshes listings every 10 seconds. Active/full rooms disappear; direct joins still validate phase/capacity atomically. A removed guest session cannot rejoin the same room, although clearing cookies can evade guest-only removal. Public guest play provides no verified identity. Hosts can abandon a round and remove disruptive/stale seats. Talk remains in-person or on a separate call; this version does not add public text/voice chat.
+
+Each guest may occupy at most three rooms. Read/write limits and room/session/request caps bound abuse; a reverse proxy may apply additional per-IP limits. Public discovery is unavailable in LAN mode.

@@ -1,23 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../server.js';
-export async function setup(t, options) {
-  const app = createApp(options);
-  await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
-  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
-  const base = `http://127.0.0.1:${app.server.address().port}`;
-  function client() {
-    let cookie = '';
-    return async (path, body, extra = {}) => {
-      const response = await fetch(base + path, { method: body !== undefined ? 'POST' : 'GET',
-        headers: { ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), Cookie: cookie, Origin: base, ...extra },
-        body: body !== undefined ? JSON.stringify(body) : undefined });
-      if (response.headers.get('set-cookie')) cookie = response.headers.get('set-cookie').split(';')[0];
-      return { status: response.status, data: await response.json(), headers: response.headers };
-    };
-  }
-  return { ...app, base, client };
-}
+import { setup } from './helpers.js';
 test('HTTP multi-device round, reconnect, secrecy, stale retry and private membership', async t => {
   const { client, rooms } = await setup(t);
   const clients = [client(), client(), client()], stranger = client();

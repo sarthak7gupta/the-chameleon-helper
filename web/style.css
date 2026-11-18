@@ -4,3 +4,5 @@
 @media(prefers-reduced-motion:no-preference){button{transition:filter .12s}.role-card{animation:reveal .18s ease-out}@keyframes reveal{from{opacity:.7}to{opacity:1}}}
 
 .create-button{margin-top:18px;width:100%}
+
+.visibility-field{margin-top:18px}.public-section{margin-top:55px;padding-top:32px;border-top:1px solid var(--line)}.public-list{display:grid;gap:12px}.public-table{display:flex;gap:20px;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:20px;background:white}.public-table h3{margin-bottom:5px;overflow-wrap:anywhere}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
