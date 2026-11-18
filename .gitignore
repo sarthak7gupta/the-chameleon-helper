@@ -62,3 +62,7 @@ playwright/.cache/
 
 # Snyk Security Extension
 .cursor/rules/snyk_rules.mdc
+
+# Multiplayer runtime data (never publish room secrets or sessions)
+data/
+*.sqlite*

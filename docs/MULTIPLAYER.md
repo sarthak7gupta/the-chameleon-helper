@@ -44,3 +44,19 @@ uv run ty check
 ```
 
 Node tests exercise all game outcomes, 3/4/6/7/8 players, role projection, sealed voting, ties, scoring, turn/phase/host guards, capacity, stale actions, malformed HTTP, origins, and static-file protection. Playwright uses three isolated browser contexts at phone dimensions for a full round and refresh, plus keyboard modal dismissal and overflow. Real phones on a shared Wi-Fi still need a manual smoke test (network routing/firewalls are environment-specific).
+
+## v2: online private rooms
+
+Run the same frontend and API on **one** Node.js 24 process behind an HTTPS reverse proxy:
+
+```sh
+MODE=online PUBLIC_ORIGIN=https://game.example.com DATABASE_PATH=/persistent/chameleon.sqlite npm start
+```
+
+Or set `PUBLIC_ORIGIN` and run `docker compose up --build -d`. The container runs as a non-root user, listens behind the host's reverse proxy at `127.0.0.1:3000`, and mounts a named persistent volume. Configure the proxy to preserve `Host`, terminate TLS, and forward all paths. There is no cross-origin API deployment. Open the backend's public HTTPS address directly, create a room, and share its code/link. Private codes are not listed anywhere.
+
+`PUBLIC_ORIGIN` is required and must match the public origin exactly, without a trailing slash/path. Cookies use Secure over HTTPS. Never expose the HTTP upstream directly to the internet. Online local development can use `PUBLIC_ORIGIN=http://localhost:3000`. Online startup rejects arbitrary HTTP public origins. `GET /health` supports health checks. Node's native SQLite module avoids a runtime dependency.
+
+Room and session updates are written durably before acknowledgment. SQLite uses WAL/FULL synchronous mode. Tokens are stored only as SHA-256 hashes; cookie secrets never enter URLs or room views. A restart restores rooms, scores, and guest seats; expiry still applies. LAN mode remains memory-only. **Do not run multiple replicas** against separate files: the in-memory authority requires a single writer. Mount durable storage and back it up (use SQLite's online backup tooling or stop the service before copying the database/WAL). Restore the complete backup before restarting. Database files contain hidden roles and must remain private. Deployments that discard their filesystem do not meet persistence requirements.
+
+GitHub Pages remains the LAN setup frontend, independent of the online service. No online hosting account or paid resource is provisioned by these PRs. Backend deployment requires a chosen HTTPS host with durable storage; the Docker configuration is ready for it.

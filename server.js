@@ -1,8 +1,9 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { networkInterfaces } from 'node:os';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { openDatabase } from './game/database.js';
 import { act, createRoom, joinRoom, view, GameError, requireThat } from './game/engine.js';
 
 const assets = new Map([['/', ['index.html', 'text/html']], ['/index.html', ['index.html', 'text/html']],
@@ -12,17 +13,27 @@ export function lanUrls(port) {
   return Object.entries(networkInterfaces()).sort(([a], [b]) => (a === 'en0' ? -1 : b === 'en0' ? 1 : 0))
     .flatMap(([, nets]) => (nets || []).filter(n => n.family === 'IPv4' && !n.internal && /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(n.address)).map(n => `http://${n.address}:${port}`));
 }
-export function createApp() {
-  const rooms = new Map();
-  const sessions = new Map();
+export function createApp({ mode = 'lan', publicOrigin = null, databasePath = 'data/chameleon.sqlite' } = {}) {
+  requireThat(['lan', 'online'].includes(mode), 'MODE must be lan or online.');
+  if (mode === 'online') {
+    requireThat(publicOrigin && new URL(publicOrigin).origin === publicOrigin, 'Set PUBLIC_ORIGIN to the exact public HTTPS origin.');
+    const url = new URL(publicOrigin);
+    requireThat(url.protocol === 'https:' || (url.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(url.hostname)), 'Online service requires HTTPS.');
+  }
+  const secure = publicOrigin?.startsWith('https:');
+  const database = mode === 'online' ? openDatabase(databasePath) : null;
+  const rooms = database?.rooms || new Map();
+  const sessions = database?.sessions || new Map();
+  const tokenHash = token => createHash('sha256').update(token || '').digest('hex');
   const limits = new Map();
   const expiry = 24 * 60 * 60 * 1000;
   function prune() {
     const now = Date.now();
-    for (const [key, room] of rooms) if (now - room.updatedAt > expiry) rooms.delete(key);
-    for (const [key, session] of sessions) if (now - session.createdAt > expiry * 7) sessions.delete(key);
+    for (const [key, room] of rooms) if (now - room.updatedAt > expiry) { database?.deleteRoom(key); rooms.delete(key); }
+    for (const [key, session] of sessions) if (now - session.createdAt > expiry * 7) { database?.deleteSession(key); sessions.delete(key); }
     for (const [key, limit] of limits) if (now > limit.until) limits.delete(key);
   }
+  prune();
   const timer = setInterval(prune, 60_000).unref();
   const server = http.createServer(async (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
@@ -43,16 +54,21 @@ export function createApp() {
       if (url.pathname === '/health' && req.method === 'GET') { send(200, { ok: true }); return; }
       requireThat(url.pathname.startsWith('/api/'), 'Not found.', 404);
       const origin = req.headers.origin;
-      requireThat(!origin || origin === `http://${req.headers.host}`, 'Open the game on its own address.', 403);
+      const allowed = publicOrigin || `http://${req.headers.host}`;
+      const lanHosts = [`localhost:${server.address().port}`, `127.0.0.1:${server.address().port}`, ...lanUrls(server.address().port).map(u => new URL(u).host)];
+      requireThat(mode === 'online' ? req.headers.host === new URL(publicOrigin).host : lanHosts.includes(req.headers.host), 'Unknown game host.', 403);
+      requireThat(!origin || origin === allowed, 'Open the game on its own address.', 403);
       const cookie = req.headers.cookie?.split(';').map(s => s.trim()).find(s => s.startsWith('chameleon='))?.slice(10);
-      let session = sessions.get(cookie);
+      let session = sessions.get(tokenHash(cookie));
+      if (session && Date.now() - session.createdAt > expiry * 7) session = null;
       if (!session) {
         requireThat(sessions.size < 10_000, 'Server busy. Try later.', 503);
         const token = randomBytes(32).toString('hex');
-        session = { id: randomUUID(), createdAt: Date.now() }; sessions.set(token, session);
-        res.setHeader('Set-Cookie', `chameleon=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800`);
+        session = { id: randomUUID(), createdAt: Date.now() };
+        database?.saveSession(tokenHash(token), session); sessions.set(tokenHash(token), session);
+        res.setHeader('Set-Cookie', `chameleon=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800${secure ? '; Secure' : ''}`);
       }
-      if (req.method === 'GET' && url.pathname === '/api/config') { send(200, { mode: 'lan', lanUrls: lanUrls(server.address().port) }); return; }
+      if (req.method === 'GET' && url.pathname === '/api/config') { send(200, { mode, lanUrls: mode === 'lan' ? lanUrls(server.address().port) : [] }); return; }
       let body;
       if (req.method === 'POST') {
         requireThat(req.headers['content-type']?.split(';')[0] === 'application/json', 'Send JSON.', 415);
@@ -69,7 +85,7 @@ export function createApp() {
         prune(); requireThat(rooms.size < 500, 'Too many rooms. Try later.', 503);
         requireThat([...rooms.values()].filter(r => r.players.some(p => p.session === session.id)).length < 3, 'Leave an existing room before creating another.');
         let code; do { code = randomBytes(4).toString('hex').toUpperCase(); } while (rooms.has(code));
-        const room = createRoom(code, session.id, body.name); rooms.set(code, room);
+        const room = createRoom(code, session.id, body.name); database?.saveRoom(room); rooms.set(code, room);
         send(201, view(room, session.id)); return;
       }
       const match = /^\/api\/rooms\/([A-F0-9]{8})(?:\/(join|actions))?$/.exec(url.pathname);
@@ -83,7 +99,8 @@ export function createApp() {
       else if (match[2] === 'actions') act(next, session.id, body);
       else throw new GameError('Not found.', 404);
       next.revision++; next.updatedAt = Date.now();
-      if (next.players.length) rooms.set(next.code, next); else rooms.delete(next.code);
+      if (next.players.length) { database?.saveRoom(next); rooms.set(next.code, next); }
+      else { database?.deleteRoom(next.code); rooms.delete(next.code); }
       send(200, next.players.some(p => p.session === session.id) ? view(next, session.id) : { left: true });
     } catch (error) {
       if (!(error instanceof GameError)) console.error(error);
@@ -91,17 +108,19 @@ export function createApp() {
       else res.end();
     }
   });
-  server.on('close', () => clearInterval(timer));
+  server.requestTimeout = 15_000; server.headersTimeout = 10_000;
+  server.on('close', () => { clearInterval(timer); database?.close(); });
   return { server, rooms, sessions };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const port = Number(process.env.PORT || 3000);
-  const { server } = createApp();
+  const mode = process.env.MODE || 'lan';
+  const { server } = createApp({ mode, publicOrigin: process.env.PUBLIC_ORIGIN || null, databasePath: process.env.DATABASE_PATH || 'data/chameleon.sqlite' });
   server.listen(port, '0.0.0.0', () => {
     console.log(`The Chameleon: http://localhost:${port}`);
     for (const nets of Object.values(networkInterfaces())) for (const net of nets || [])
       if (net.family === 'IPv4' && !net.internal) console.log(`Same Wi-Fi? Join at http://${net.address}:${port}`);
-    console.log('Keep this launcher running. Rooms are in memory and end when it stops.');
+    console.log(mode === 'lan' ? 'Keep this launcher running. Rooms are in memory and end when it stops.' : `Online private rooms ready at ${process.env.PUBLIC_ORIGIN}. SQLite persistence enabled.`);
   });
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => server.close(() => process.exit(0)));
 }

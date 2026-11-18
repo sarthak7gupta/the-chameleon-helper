@@ -16,6 +16,16 @@ The [deployed frontend](https://sarthak7gupta.github.io/the-chameleon-helper/) p
 
 [Multiplayer architecture, rules, release stack and testing](docs/MULTIPLAYER.md)
 
+## Private rooms over the internet
+
+Deploy the included Docker service behind HTTPS with a durable volume:
+
+```sh
+MODE=online PUBLIC_ORIGIN=https://game.example.com DATABASE_PATH=/persistent/chameleon.sqlite npm start
+```
+
+Friends open that public address and join with a private room code. No local link or account is needed. See the deployment constraints in [the multiplayer guide](docs/MULTIPLAYER.md).
+
 ## Original helpers
 
 The original dice/topic web helper is preserved at [helper.html](helper.html). The Python CLI is unchanged:
