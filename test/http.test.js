@@ -1,0 +1,53 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { createApp } from '../server.js';
+export async function setup(t, options) {
+  const app = createApp(options);
+  await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
+  t.after(() => new Promise(resolve => { app.server.close(resolve); app.server.closeAllConnections(); }));
+  const base = `http://127.0.0.1:${app.server.address().port}`;
+  function client() {
+    let cookie = '';
+    return async (path, body, extra = {}) => {
+      const response = await fetch(base + path, { method: body !== undefined ? 'POST' : 'GET',
+        headers: { ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), Cookie: cookie, Origin: base, ...extra },
+        body: body !== undefined ? JSON.stringify(body) : undefined });
+      if (response.headers.get('set-cookie')) cookie = response.headers.get('set-cookie').split(';')[0];
+      return { status: response.status, data: await response.json(), headers: response.headers };
+    };
+  }
+  return { ...app, base, client };
+}
+test('HTTP multi-device round, reconnect, secrecy, stale retry and private membership', async t => {
+  const { client, rooms } = await setup(t);
+  const clients = [client(), client(), client()], stranger = client();
+  let r = (await clients[0]('/api/rooms', { name: 'Host' })).data;
+  const path = `/api/rooms/${r.code}`;
+  for (let i = 1; i < 3; i++) r = (await clients[i](path + '/join', { name: 'Guest ' + i })).data;
+  assert.equal((await stranger(path)).status, 403);
+  assert.equal((await clients[1](path + '/actions', { type: 'start', revision: r.revision })).status, 403);
+  assert.equal((await clients[0](path + '/actions', { type: 'start', revision: r.revision - 1 })).status, 409);
+  r = (await clients[0](path + '/actions', { type: 'start', revision: r.revision })).data;
+  const views = await Promise.all(clients.map(c => c(path)));
+  assert.equal(views.filter(v => v.data.role === 'chameleon').length, 1);
+  assert.equal(views.find(v => v.data.role === 'chameleon').data.secret, null);
+  for (let i = 0; i < 3; i++) r = (await clients[i](path + '/actions', { type: 'ready', revision: r.revision })).data;
+  const playerIds = views.map(v => v.data.me);
+  for (const id of r.order) r = (await clients[playerIds.indexOf(id)](path + '/actions', { type: 'clue', text: 'test', revision: r.revision })).data;
+  assert.equal(r.phase, 'discussion');
+  assert.equal((await clients[0](path)).data.me, playerIds[0], 'refresh resumes same identity');
+  r = (await clients[0](path + '/actions', { type: 'vote-open', revision: r.revision })).data;
+  const authority = rooms.get(r.code), target = authority.players.find(p => p.id !== authority.chameleonId).id;
+  for (let i = 0; i < 3; i++) r = (await clients[i](path + '/actions', { type: 'vote', target, revision: r.revision })).data;
+  assert.equal(r.phase, 'result'); assert.equal(r.outcome, 'escaped');
+});
+test('HTTP rejects cross-origin mutations, invalid inputs, oversized bodies and private files', async t => {
+  const { client, base } = await setup(t), c = client();
+  assert.equal((await c('/api/rooms', { name: 'Hi' }, { Origin: 'https://evil.example' })).status, 403);
+  assert.equal((await c('/api/rooms', { name: '<script>' })).status, 400);
+  assert.equal((await c('/api/rooms', { name: 'x'.repeat(5000) })).status, 413);
+  assert.equal((await c('/api/rooms', [], {})).status, 400);
+  assert.equal((await c('/api/rooms', {}, { 'Content-Type': 'text/plain' })).status, 415);
+  for (const file of ['/game/engine.js', '/game/topics.json', '/server.js', '/.git/config', '/%2e%2e/main.py']) assert.equal((await fetch(base + file)).status, 404);
+  const response = await fetch(base); assert.equal(response.status, 200); assert.match(response.headers.get('content-security-policy'), /script-src 'self'/);
+});
