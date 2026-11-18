@@ -1,10 +1,10 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { networkInterfaces } from 'node:os';
-import { randomBytes, randomUUID, createHash } from 'node:crypto';
+import { randomBytes, randomUUID, createHash, scrypt, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { openDatabase } from './game/database.js';
-import { act, createRoom, joinRoom, view, GameError, requireThat } from './game/engine.js';
+import { act, createRoom, joinRoom, view, playerName, GameError, requireThat } from './game/engine.js';
 
 const assets = new Map([['/', ['index.html', 'text/html']], ['/index.html', ['index.html', 'text/html']],
   ['/web/app.js', ['web/app.js', 'text/javascript']], ['/web/style.css', ['web/style.css', 'text/css']],
@@ -27,6 +27,7 @@ export function createApp({ mode = 'lan', publicOrigin = null, databasePath = 'd
   const tokenHash = token => createHash('sha256').update(token || '').digest('hex');
   const limits = new Map();
   const hostSeen = new Map();
+  const accounts = database?.accounts || new Map();
   const expiry = 24 * 60 * 60 * 1000;
   function prune() {
     const now = Date.now();
@@ -73,7 +74,7 @@ export function createApp({ mode = 'lan', publicOrigin = null, databasePath = 'd
         database?.saveSession(tokenHash(token), session); sessions.set(tokenHash(token), session);
         res.setHeader('Set-Cookie', `chameleon=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=604800${secure ? '; Secure' : ''}`);
       }
-      if (req.method === 'GET' && url.pathname === '/api/config') { send(200, { mode, publicRooms: mode === 'online', lanUrls: mode === 'lan' ? lanUrls(server.address().port) : [] }); return; }
+      if (req.method === 'GET' && url.pathname === '/api/config') { send(200, { mode, publicRooms: mode === 'online', account: session.account || null, lanUrls: mode === 'lan' ? lanUrls(server.address().port) : [] }); return; }
       if (req.method === 'GET' && url.pathname === '/api/rooms') {
         requireThat(mode === 'online', 'Public rooms are available on the online service.', 404);
         const list = [...rooms.values()].filter(r => r.visibility === 'public' && r.phase === 'lobby' && r.players.length < 8 && Date.now() - r.updatedAt <= expiry && Date.now() - (hostSeen.get(r.code) || 0) < 60_000)
@@ -92,6 +93,39 @@ export function createApp({ mode = 'lan', publicOrigin = null, databasePath = 'd
         for await (const chunk of req) { text += chunk; requireThat(Buffer.byteLength(text) <= 4096, 'Request too large.', 413); }
         try { body = JSON.parse(text); } catch { throw new GameError('Invalid JSON.'); }
         requireThat(body && typeof body === 'object' && !Array.isArray(body), 'Invalid request.');
+      }
+      if (req.method === 'POST' && url.pathname.startsWith('/api/auth/')) {
+        requireThat(mode === 'online', 'Accounts are available on the online service.', 404);
+        const action = url.pathname.slice('/api/auth/'.length);
+        requireThat(['register', 'login', 'logout'].includes(action), 'Not found.', 404);
+        let authLimit = limits.get(`auth:${req.socket.remoteAddress}`);
+        if (!authLimit || Date.now() > authLimit.until) { authLimit = { count: 0, until: Date.now() + 900_000 }; limits.set(`auth:${req.socket.remoteAddress}`, authLimit); }
+        requireThat(++authLimit.count <= 15, 'Too many sign-in attempts. Wait 15 minutes.', 429);
+        if (action === 'logout') {
+          delete session.account;
+          database?.saveSession(tokenHash(cookie), session); sessions.set(tokenHash(cookie), session);
+          send(200, { account: null }); return;
+        }
+        requireThat(accounts.size < 10_000, 'Server busy. Try later.', 503);
+        const name = playerName(body.name);
+        const password = typeof body.password === 'string' ? body.password : '';
+        requireThat(password.length >= 8 && password.length <= 200, 'Use a password of 8–200 characters.');
+        const key = name.toLowerCase();
+        const existing = accounts.get(key);
+        if (action === 'register') {
+          requireThat(!existing, 'That name is already taken. Sign in instead.');
+          const salt = randomBytes(16).toString('hex');
+          const hash = await new Promise((resolve, reject) => scrypt(password, salt, 64, (error, derived) => error ? reject(error) : resolve(derived)));
+          const account = { name, key, salt, hash: hash.toString('hex'), createdAt: Date.now() };
+          database.saveAccount(account); accounts.set(key, account);
+        } else {
+          // The same scrypt work happens on the failure path, keeping timing differences small.
+          const candidate = existing ? await new Promise((resolve, reject) => scrypt(password, existing.salt, 64, (error, derived) => error ? reject(error) : resolve(derived))) : randomBytes(64);
+          requireThat(existing && timingSafeEqual(candidate, Buffer.from(existing.hash, 'hex')), 'Wrong name or password.');
+        }
+        session.account = name;
+        database?.saveSession(tokenHash(cookie), session); sessions.set(tokenHash(cookie), session);
+        send(200, { account: name }); return;
       }
       if (req.method === 'POST' && url.pathname === '/api/rooms') {
         prune(); requireThat(rooms.size < 500, 'Too many rooms. Try later.', 503);

@@ -69,3 +69,9 @@ On the online service, hosts choose **Private (default)** or **Public** when cre
 Only lobbies with fewer than eight seats, an unexpired room, and a host seen within the last minute are discoverable. A restarted service lists a room after its host reconnects. Polling refreshes listings every 10 seconds. Active/full rooms disappear; direct joins still validate phase/capacity atomically. A removed guest session cannot rejoin the same room, although clearing cookies can evade guest-only removal. Public guest play provides no verified identity. Hosts can abandon a round and remove disruptive/stale seats. Talk remains in-person or on a separate call; this version does not add public text/voice chat.
 
 Each guest may occupy at most three rooms. Read/write limits and room/session/request caps bound abuse; a reverse proxy may apply additional per-IP limits. Public discovery is unavailable in LAN mode.
+
+## v4: optional accounts with login
+
+On the online service, guests can create an account with a display name and a password of 8–200 characters. Accounts are optional: every guest flow from v1–v3 still works with no account. Signing in sets a signed-in state on the existing HttpOnly session cookie (SameSite=Strict), so the name survives reloads and devices sharing the cookie. Sign out clears it.
+
+Passwords are hashed with scrypt (64-byte derived key, per-account random salt) and stored only as `salt + hash` in SQLite; plaintext never reaches the database or logs. Login and registration verify with constant-time comparison, and the same scrypt work runs on the failure path to blunt timing probes. Duplicate account names are rejected case-insensitively. Sign-in attempts are limited to 15 per IP per 15 minutes; registration is capped at 10,000 accounts. There is no email reset: an account is only an optional name memory, never a billing or identity-critical record. LAN mode has no accounts.
